@@ -85,36 +85,36 @@ export const AshaBarrierEntry: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Village Non-Clinical Barrier Assessment</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Village Non-Clinical Barrier Assessment</h1>
+        <p className="text-xs text-slate-500 mt-1">
           Record frontline field constraints (travel distance, lost wages, missing documents) for household visits
         </p>
       </div>
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/25 text-red-800 dark:text-red-300 text-xs flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-600 dark:text-red-400" />
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
         {/* Patient Selection */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
             Select Assigned Household Patient
           </label>
           <select
             value={selectedPatientId}
             onChange={(e) => setSelectedPatientId(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
@@ -125,15 +125,15 @@ export const AshaBarrierEntry: React.FC = () => {
         </div>
 
         {selectedPatient && (
-          <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-500/5 border border-rose-200/50 dark:border-rose-500/20 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs flex items-center justify-between">
             <div>
-              <span className="font-bold text-slate-900 dark:text-white">{selectedPatient.name}</span>
+              <span className="font-bold text-slate-900">{selectedPatient.name}</span>
               <span className="text-slate-500 ml-2">({selectedPatient.age}y, {selectedPatient.gender})</span>
-              <p className="text-[11px] text-slate-400 mt-0.5">Village: {selectedPatient.village}</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Village: {selectedPatient.village}</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-slate-400 block uppercase">Current Friction</span>
-              <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Current Friction</span>
+              <span className="font-black text-rose-600 text-sm">
                 {selectedPatient.frictionScore}/100
               </span>
             </div>
@@ -142,8 +142,8 @@ export const AshaBarrierEntry: React.FC = () => {
 
         {/* Barrier 1: Transport & Mobility */}
         <div className="space-y-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <Bus className="w-4 h-4 text-blue-500" /> Physical Transit & Bus Connectivity
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <Bus className="w-4 h-4 text-teal-600" /> Physical Transit & Bus Connectivity
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -157,12 +157,12 @@ export const AshaBarrierEntry: React.FC = () => {
                 onClick={() => setTransport(opt.val)}
                 className={`p-3 rounded-2xl border text-left transition-all ${
                   transport === opt.val
-                    ? 'bg-blue-50/80 dark:bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    ? 'bg-teal-50 border-teal-500 ring-2 ring-teal-500/20 shadow-2xs'
+                    : 'border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <div className="font-semibold text-xs text-slate-900 dark:text-white">{opt.label}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</div>
+                <div className="font-bold text-xs text-slate-900">{opt.label}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -170,12 +170,12 @@ export const AshaBarrierEntry: React.FC = () => {
 
         {/* Barrier 2: Financial Accessibility */}
         <div className="space-y-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-emerald-500" /> Financial Daily Wage & Scan Costs
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-emerald-600" /> Financial Daily Wage & Scan Costs
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { val: 'severely_constrained', label: 'Daily Wage Earner', sub: 'Loses Rs 500/day' },
+              { val: 'severely_constrained', label: 'Daily Wage Earner', sub: 'Loses ₹500/day' },
               { val: 'bpl_ration_card', label: 'BPL Card Holder', sub: 'Ayushman Eligible' },
               { val: 'moderate_budget', label: 'Moderate Budget', sub: 'Can afford travel' },
             ].map((opt) => (
@@ -185,12 +185,12 @@ export const AshaBarrierEntry: React.FC = () => {
                 onClick={() => setFinance(opt.val)}
                 className={`p-3 rounded-2xl border text-left transition-all ${
                   finance === opt.val
-                    ? 'bg-emerald-50/80 dark:bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-2xs'
+                    : 'border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <div className="font-semibold text-xs text-slate-900 dark:text-white">{opt.label}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</div>
+                <div className="font-bold text-xs text-slate-900">{opt.label}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -198,8 +198,8 @@ export const AshaBarrierEntry: React.FC = () => {
 
         {/* Barrier 3: Documentation & Verification */}
         <div className="space-y-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <FileQuestion className="w-4 h-4 text-amber-500" /> Identity Documents & ABHA Card
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <FileQuestion className="w-4 h-4 text-amber-600" /> Identity Documents & ABHA Card
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -213,12 +213,12 @@ export const AshaBarrierEntry: React.FC = () => {
                 onClick={() => setDocs(opt.val)}
                 className={`p-3 rounded-2xl border text-left transition-all ${
                   docs === opt.val
-                    ? 'bg-amber-50/80 dark:bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-500/20 shadow-2xs'
+                    : 'border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <div className="font-semibold text-xs text-slate-900 dark:text-white">{opt.label}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</div>
+                <div className="font-bold text-xs text-slate-900">{opt.label}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -226,8 +226,8 @@ export const AshaBarrierEntry: React.FC = () => {
 
         {/* Barrier 4: Digital Literacy & Network */}
         <div className="space-y-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-purple-500" /> Mobile Connectivity & Digital Access
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-purple-600" /> Mobile Connectivity & Digital Access
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -241,12 +241,12 @@ export const AshaBarrierEntry: React.FC = () => {
                 onClick={() => setDigital(opt.val)}
                 className={`p-3 rounded-2xl border text-left transition-all ${
                   digital === opt.val
-                    ? 'bg-purple-50/80 dark:bg-purple-500/15 border-purple-500 ring-2 ring-purple-500/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-2xs'
+                    : 'border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                <div className="font-semibold text-xs text-slate-900 dark:text-white">{opt.label}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{opt.sub}</div>
+                <div className="font-bold text-xs text-slate-900">{opt.label}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -254,7 +254,7 @@ export const AshaBarrierEntry: React.FC = () => {
 
         {/* Frontline Notes */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
             ASHA Home Visit Observations & Interventions
           </label>
           <textarea
@@ -262,14 +262,14 @@ export const AshaBarrierEntry: React.FC = () => {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="e.g. Patient hesitated due to eldercare at home; counselled family to accompany on Monday PHC OPD bus..."
-            className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="w-full py-3.5 px-6 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <Save className="w-4 h-4" /> Save Field Assessment & Recalculate Friction
         </button>

@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import {
-  HeartPulse,
-  Baby,
-  Activity,
-  AlertCircle,
   Stethoscope,
-  Volume2,
-  Mic,
-  MapPin,
-  Clock,
-  Ambulance,
+  AlertCircle,
   PhoneCall,
-  CheckCircle2,
+  Clock,
+  MapPin,
+  Ambulance,
+  Volume2,
   Sparkles,
+  Baby,
+  HeartPulse,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import { offlineDb } from '../../offline/db';
 import { syncManager } from '../../offline/syncManager';
@@ -25,128 +24,147 @@ interface AshaTriageWizardProps {
 export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }) => {
   const [patientName, setPatientName] = useState('Sunita Devi');
   const [age, setAge] = useState('28');
-  const [gender, setGender] = useState('female');
-  const [selectedCategory, setSelectedCategory] = useState<'MATERNAL' | 'CHILD' | 'CARDIAC' | 'GENERAL'>('MATERNAL');
+  const [gender, setGender] = useState('Female');
   const [isPregnant, setIsPregnant] = useState(true);
-  const [chiefComplaint, setChiefComplaint] = useState('Severe headache, pedal swelling, and high blood pressure');
+  const [chiefComplaint, setChiefComplaint] = useState('Severe headache with blurry vision in 3rd trimester');
   const [systolicBP, setSystolicBP] = useState('155');
   const [diastolicBP, setDiastolicBP] = useState('98');
-  const [spO2, setSpO2] = useState('97');
   const [selectedDangerSigns, setSelectedDangerSigns] = useState<string[]>([
-    'Pedal / Facial Edema',
-    'Persistent Headache',
+    'Severe persistent headache',
+    'Pedal edema (Swollen feet/face)',
   ]);
+  const [selectedCategory, setSelectedCategory] = useState<'MATERNAL' | 'CHILD' | 'CARDIAC' | 'GENERAL'>('MATERNAL');
   const [evaluating, setEvaluating] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  // Audio Speech Synthesis for low-literacy guidance
-  const speakText = (text: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'hi-IN';
-      window.speechSynthesis.speak(utterance);
-    }
-  };
-
+  // Category based danger sign options
   const dangerOptionsByCategory = {
     MATERNAL: [
-      { id: 'vaginal_bleeding', label: 'योनि से रक्तस्राव (Vaginal Bleeding)', redFlag: true },
-      { id: 'convulsions', label: 'दौरे या बेहोशी (Convulsions / Fits)', redFlag: true },
-      { id: 'edema', label: 'चेहरे और पैरों में तेज सूजन (Pedal / Facial Edema)', redFlag: false },
-      { id: 'headache', label: 'तेज सिरदर्द और धुंधला दिखना (Severe Headache)', redFlag: false },
-      { id: 'water_leak', label: 'पानी की थैली फटना (Fluid Leakage)', redFlag: true },
+      { id: 'mat-1', label: 'Severe persistent headache', redFlag: true },
+      { id: 'mat-2', label: 'Pedal edema (Swollen feet/face)', redFlag: false },
+      { id: 'mat-3', label: 'Vaginal bleeding or watery discharge', redFlag: true },
+      { id: 'mat-4', label: 'Decreased or absent fetal movements', redFlag: true },
+      { id: 'mat-5', label: 'Severe upper abdominal pain / Vomiting', redFlag: true },
+      { id: 'mat-6', label: 'Convulsions / Fits', redFlag: true },
     ],
     CHILD: [
-      { id: 'unable_to_drink', label: 'दूध या पानी पीने में असमर्थ (Unable to drink)', redFlag: true },
-      { id: 'vomits_all', label: 'सब कुछ उल्टी कर देना (Vomiting everything)', redFlag: true },
-      { id: 'stridor', label: 'सांस में घरघराहट या पसली चलना (Chest Indrawing / Stridor)', redFlag: true },
-      { id: 'fever_3d', label: '3 दिन से तेज बुखार (High Fever > 3 Days)', redFlag: false },
+      { id: 'ch-1', label: 'Chest indrawing / Rapid breathing', redFlag: true },
+      { id: 'ch-2', label: 'Inability to breastfeed or drink', redFlag: true },
+      { id: 'ch-3', label: 'Severe watery diarrhea with sunken eyes', redFlag: true },
+      { id: 'ch-4', label: 'Lethargy or unconsciousness', redFlag: true },
+      { id: 'ch-5', label: 'High fever for more than 3 days', redFlag: false },
+      { id: 'ch-6', label: 'Stridor or wheezing while calm', redFlag: true },
     ],
     CARDIAC: [
-      { id: 'chest_pain', label: 'सीने में भारीपन या दर्द (Crushing Chest Pain)', redFlag: true },
-      { id: 'breathlessness', label: 'सांस लेने में अत्यधिक तकलीफ (Severe Breathlessness)', redFlag: true },
-      { id: 'facial_droop', label: 'हाथ-पैर में कमजोरी या बोली लड़खड़ाना (Stroke symptoms)', redFlag: true },
+      { id: 'card-1', label: 'Crushing chest pain radiating to left arm/jaw', redFlag: true },
+      { id: 'card-2', label: 'Severe acute shortness of breath at rest', redFlag: true },
+      { id: 'card-3', label: 'Sudden weakness on one side of face/body', redFlag: true },
+      { id: 'card-4', label: 'Fainting / Syncope episode', redFlag: true },
+      { id: 'card-5', label: 'Irregular palpitations with dizziness', redFlag: false },
     ],
     GENERAL: [
-      { id: 'high_sugar', label: 'ब्लड शुगर 250 से अधिक (High Blood Sugar)', redFlag: false },
-      { id: 'dizziness', label: 'चक्कर आना और कमजोरी (Dizziness / Fatigue)', redFlag: false },
+      { id: 'gen-1', label: 'Persistent high fever with chills', redFlag: false },
+      { id: 'gen-2', label: 'Cough for more than 2 weeks (TB suspect)', redFlag: false },
+      { id: 'gen-3', label: 'Chronic non-healing ulcer / wound', redFlag: false },
+      { id: 'gen-4', label: 'Accidental trauma / Heavy bleeding', redFlag: true },
+      { id: 'gen-5', label: 'Severe body dehydration', redFlag: false },
     ],
   };
 
   const toggleDangerSign = (label: string) => {
-    setSelectedDangerSigns((prev) =>
-      prev.includes(label) ? prev.filter((s) => s !== label) : [...prev, label]
-    );
+    if (selectedDangerSigns.includes(label)) {
+      setSelectedDangerSigns(selectedDangerSigns.filter((s) => s !== label));
+    } else {
+      setSelectedDangerSigns([...selectedDangerSigns, label]);
+    }
   };
 
+  // TTS audio guidance
+  const speakText = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Run Triage
   const handleRunTriage = async () => {
     setEvaluating(true);
-    const symptomsList = [...selectedDangerSigns, chiefComplaint];
 
     const payload = {
-      age: parseInt(age, 10) || 28,
+      patientName,
+      age: parseInt(age) || 30,
       gender,
-      isPregnant: selectedCategory === 'MATERNAL' || isPregnant,
-      gestationalWeeks: selectedCategory === 'MATERNAL' ? 32 : undefined,
-      symptoms: symptomsList,
+      isPregnant,
       chiefComplaint,
-      vitalSigns: {
-        systolicBP: systolicBP ? parseInt(systolicBP, 10) : undefined,
-        diastolicBP: diastolicBP ? parseInt(diastolicBP, 10) : undefined,
-        spO2: spO2 ? parseInt(spO2, 10) : undefined,
+      vitals: {
+        systolicBP: parseInt(systolicBP) || 120,
+        diastolicBP: parseInt(diastolicBP) || 80,
+      },
+      dangerSigns: selectedDangerSigns,
+      patientCoordinates: {
+        latitude: 23.3644,
+        longitude: 85.3411,
       },
     };
 
     try {
-      // Attempt live API evaluation
+      // 1. Try online server evaluation
       const res = await api.post('/triage/evaluate', payload);
       if (res.data?.success) {
         setResult(res.data);
+        speakText(res.data.triage.primaryRecommendation);
       }
     } catch {
-      // Local fallback rule evaluation for offline operation
-      const hasRedFlag = selectedDangerSigns.some(
-        (s) => s.includes('Bleeding') || s.includes('Convulsions') || s.includes('Chest Pain')
+      // 2. Offline deterministic fallback
+      const hasEmergency = selectedDangerSigns.some((s) =>
+        ['Chest indrawing', 'Vaginal bleeding', 'Crushing chest pain', 'Convulsions'].some((k) =>
+          s.includes(k)
+        )
       );
-      const isUrgent = (systolicBP && parseInt(systolicBP, 10) >= 150) || hasRedFlag;
 
-      const fallbackResult = {
+      const localResult = {
+        success: true,
         triage: {
-          urgency: isUrgent ? 'EMERGENCY_108' : 'PHC_VISIT',
+          urgency: hasEmergency ? 'EMERGENCY_108' : 'PHC_VISIT',
           confidenceScore: 0.94,
-          protocolCategory: selectedCategory === 'MATERNAL' ? 'MATERNAL_ANC' : 'ACUTE_ADULT',
-          primaryRecommendation: isUrgent
-            ? '108 आपातकालीन रेफरल: मरीज को तुरंत जिला अस्पताल रेफर करें।'
-            : 'प्राथमिक स्वास्थ्य केंद्र (PHC) में डॉक्टर से जांच कराएं।',
-          recommendedFacilityLevel: isUrgent ? 'District Hospital' : 'PHC',
-          actionableSteps: [
-            'आशा कार्यकर्ता मरीज के साथ अस्पताल जाएं',
-            '108 एम्बुलेंस तुरंत कॉल करें',
-            'रक्तचाप की लगातार निगरानी रखें',
-          ],
-          teleconsultEligible: !isUrgent,
-          redFlagsIdentified: selectedDangerSigns,
-          clinicalRationale: 'Off-line NHM / IMNCI protocol evaluation complete.',
+          primaryRecommendation: hasEmergency
+            ? 'Emergency 108 Ambulance Dispatch Required — Immediate Hospital Transfer'
+            : 'Primary Health Centre (PHC) Medical Officer Consultation Recommended',
+          recommendedFacilityLevel: hasEmergency ? 'DISTRICT_HOSPITAL' : 'PRIMARY_HEALTH_CENTRE',
+          actionableSteps: hasEmergency
+            ? [
+                'Call 108 ambulance hotline immediately',
+                'Keep patient in semi-upright resting position',
+                'Ensure family caregiver escorts patient with MCP card and past records',
+              ]
+            : [
+                'Visit Angara Primary Health Centre between 9:00 AM - 1:00 PM',
+                'Carry Ayushman Bharat ABHA card for fast-track OPD token',
+                'Ensure adherence to salt-restricted diet and take prescribed IFA tablets',
+              ],
         },
         routing: {
           selectedFacility: {
-            name: isUrgent ? 'Ranchi District Hospital & FRU' : 'Angara Primary Health Centre',
-            type: isUrgent ? 'District Hospital' : 'PHC',
-            distanceKm: isUrgent ? 38.5 : 8.5,
-            travelMinutes: isUrgent ? 70 : 22,
-            opdQueueCount: 16,
-            doctorsOnDuty: isUrgent ? 18 : 2,
-            availableBeds: isUrgent ? 120 : 6,
+            name: hasEmergency ? 'Ranchi District Hospital' : 'Angara Primary Health Centre',
+            distanceKm: hasEmergency ? 32 : 4.5,
+            travelMinutes: hasEmergency ? 55 : 15,
+            doctorsOnDuty: hasEmergency ? 12 : 2,
           },
-          routingRationale: 'Nearest facility matching required obstetric/emergency readiness.',
-          estimatedWaitMinutes: isUrgent ? 0 : 25,
-          transportAdvice: isUrgent ? '108 Ambulance required.' : 'Community Health Shuttle available.',
+          transportAdvice: hasEmergency
+            ? 'Free emergency transit guaranteed under National Ambulance Service (NAS 108).'
+            : 'Shared rural auto available from village market chowk every 30 minutes.',
+          estimatedWaitMinutes: 20,
         },
       };
 
-      setResult(fallbackResult);
+      setResult(localResult);
+      speakText(localResult.triage.primaryRecommendation);
     } finally {
-      // Save offline assessment into Dexie
+      // Record locally in IndexedDB
       await offlineDb.triageAssessments.put({
         id: 'tri-' + Date.now().toString(36),
         patientName,
@@ -167,18 +185,18 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {!result ? (
-        <div className="bg-slate-800/70 rounded-3xl p-6 sm:p-8 border border-slate-700/80 shadow-xl space-y-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-card space-y-6 text-slate-900">
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shadow-xs">
                 <Stethoscope className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-slate-900">
                   डिजिटल लक्षण जांच (NHM Clinical Triage)
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Icon-guided, voice-assisted symptom evaluation for frontline workers.
                 </p>
               </div>
@@ -187,24 +205,24 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
             <button
               type="button"
               onClick={() => speakText('मरीज के मुख्य लक्षण और खतरे के निशान चुनें')}
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-700/80 hover:bg-slate-700 text-xs text-brand-300 font-semibold transition"
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-xs text-teal-800 font-bold border border-teal-200 transition"
             >
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-4 h-4 text-teal-600" />
               <span>आवाज में सुनें</span>
             </button>
           </div>
 
           {/* 1. Category Selector Buttons */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
               श्रेणी चुनें (Select Category):
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { id: 'MATERNAL', label: 'गर्भवती महिला (Pregnancy/ANC)', icon: HeartPulse, color: 'text-pink-400' },
-                { id: 'CHILD', label: 'छोटा बच्चा (Child < 5y)', icon: Baby, color: 'text-amber-400' },
-                { id: 'CARDIAC', label: 'दिल / सांस (Cardiac/Emergency)', icon: Activity, color: 'text-rose-400' },
-                { id: 'GENERAL', label: 'सुगर / बीपी / सामान्य (NCD)', icon: Stethoscope, color: 'text-cyan-400' },
+                { id: 'MATERNAL', label: 'गर्भवती महिला (Pregnancy/ANC)', icon: HeartPulse, color: 'text-pink-600' },
+                { id: 'CHILD', label: 'छोटा बच्चा (Child < 5y)', icon: Baby, color: 'text-amber-600' },
+                { id: 'CARDIAC', label: 'दिल / सांस (Cardiac/Emergency)', icon: Activity, color: 'text-rose-600' },
+                { id: 'GENERAL', label: 'सुगर / बीपी / सामान्य (NCD)', icon: Stethoscope, color: 'text-teal-600' },
               ].map((cat) => {
                 const Icon = cat.icon;
                 const active = selectedCategory === cat.id;
@@ -218,12 +236,12 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
                     }}
                     className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition ${
                       active
-                        ? 'bg-slate-700 border-brand-500 shadow-md ring-2 ring-brand-500/30'
-                        : 'bg-slate-900/60 border-slate-700/60 hover:bg-slate-800'
+                        ? 'bg-teal-50 border-teal-500 shadow-xs ring-2 ring-teal-500/20 text-teal-900'
+                        : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     <Icon className={`w-6 h-6 mb-2 ${cat.color}`} />
-                    <span className="text-xs font-bold text-white leading-snug">{cat.label}</span>
+                    <span className="text-xs font-bold leading-snug">{cat.label}</span>
                   </button>
                 );
               })}
@@ -233,27 +251,27 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
           {/* 2. Basic Patient Details */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">मरीज का नाम</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">मरीज का नाम</label>
               <input
                 type="text"
                 value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">उम्र (Age)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">उम्र (Age)</label>
               <input
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 रक्तचाप (Blood Pressure mmHg)
               </label>
               <div className="flex items-center space-x-2">
@@ -262,15 +280,15 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
                   placeholder="Sys 120"
                   value={systolicBP}
                   onChange={(e) => setSystolicBP(e.target.value)}
-                  className="w-1/2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                  className="w-1/2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
-                <span className="text-slate-500">/</span>
+                <span className="text-slate-400">/</span>
                 <input
                   type="number"
                   placeholder="Dia 80"
                   value={diastolicBP}
                   onChange={(e) => setDiastolicBP(e.target.value)}
-                  className="w-1/2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                  className="w-1/2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -278,7 +296,7 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
 
           {/* 3. Danger Signs Checklist */}
           <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>खतरे के निशान (Danger Signs / Red Flags):</span>
               <span className="text-slate-500 font-normal lowercase">(लागू होने पर टिक करें)</span>
             </label>
@@ -293,15 +311,15 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
                     className={`p-3 rounded-xl border text-left flex items-center justify-between transition text-xs ${
                       checked
                         ? opt.redFlag
-                          ? 'bg-rose-950/40 border-rose-500 text-rose-200'
-                          : 'bg-brand-950/40 border-brand-500 text-brand-200'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800'
+                          ? 'bg-rose-50 border-rose-300 text-rose-900 shadow-2xs font-semibold'
+                          : 'bg-teal-50 border-teal-300 text-teal-900 shadow-2xs font-semibold'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <span className="font-semibold">{opt.label}</span>
+                    <span>{opt.label}</span>
                     <div
                       className={`w-4 h-4 rounded-md border flex items-center justify-center ${
-                        checked ? 'bg-brand-500 border-brand-500 text-white' : 'border-slate-600'
+                        checked ? 'bg-teal-600 border-teal-600 text-white font-bold text-[10px]' : 'border-slate-300'
                       }`}
                     >
                       {checked && '✓'}
@@ -318,7 +336,7 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
               type="button"
               disabled={evaluating}
               onClick={handleRunTriage}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-brand-600 to-indigo-600 text-white font-extrabold text-sm shadow-xl shadow-brand-500/25 hover:opacity-95 transition flex items-center justify-center space-x-2"
+              className="w-full py-4 rounded-2xl bg-teal-600 text-white font-extrabold text-sm shadow-xs hover:bg-teal-700 transition flex items-center justify-center space-x-2"
             >
               <Sparkles className="w-5 h-5" />
               <span>
@@ -329,22 +347,22 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
         </div>
       ) : (
         /* TRIAGE RESULT CARD (4-TIER DISPLAY) */
-        <div className="bg-slate-800/80 rounded-3xl p-6 sm:p-8 border border-slate-700 shadow-2xl space-y-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-card space-y-6 text-slate-900">
           {/* Top Urgency Classification Banner */}
           <div
             className={`p-6 rounded-2xl border flex flex-wrap items-center justify-between gap-4 ${
               result.triage.urgency === 'EMERGENCY_108'
-                ? 'bg-rose-950/50 border-rose-600/60 text-rose-200 shadow-lg shadow-rose-950/30'
+                ? 'bg-rose-50 border-rose-200 text-rose-950 shadow-xs'
                 : result.triage.urgency === 'PHC_VISIT'
-                ? 'bg-amber-950/50 border-amber-600/60 text-amber-200 shadow-lg shadow-amber-950/30'
+                ? 'bg-amber-50 border-amber-200 text-amber-950 shadow-xs'
                 : result.triage.urgency === 'TELECONSULT'
-                ? 'bg-blue-950/50 border-blue-600/60 text-blue-200 shadow-lg shadow-blue-950/30'
-                : 'bg-emerald-950/50 border-emerald-600/60 text-emerald-200 shadow-lg shadow-emerald-950/30'
+                ? 'bg-blue-50 border-blue-200 text-blue-950 shadow-xs'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-950 shadow-xs'
             }`}
           >
             <div className="flex items-center space-x-4">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white shadow-lg shrink-0 ${
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white shadow-xs shrink-0 ${
                   result.triage.urgency === 'EMERGENCY_108'
                     ? 'bg-rose-600 animate-pulse'
                     : result.triage.urgency === 'PHC_VISIT'
@@ -365,14 +383,14 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
 
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-black/40 border border-white/20">
+                  <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-white border border-slate-200/80 text-slate-800 shadow-2xs">
                     {result.triage.urgency}
                   </span>
-                  <span className="text-xs text-slate-300">
+                  <span className="text-xs text-slate-500 font-semibold">
                     Confidence: {(result.triage.confidenceScore * 100).toFixed(0)}%
                   </span>
                 </div>
-                <h3 className="text-xl font-extrabold text-white mt-1">
+                <h3 className="text-xl font-extrabold text-slate-900 mt-1">
                   {result.triage.primaryRecommendation}
                 </h3>
               </div>
@@ -381,7 +399,7 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
             {result.triage.urgency === 'EMERGENCY_108' && (
               <a
                 href="tel:108"
-                className="px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm shadow-xl flex items-center space-x-2 shrink-0 animate-bounce"
+                className="px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm shadow-md flex items-center space-x-2 shrink-0 animate-bounce"
               >
                 <Ambulance className="w-5 h-5" />
                 <span>108 एम्बुलेंस बुलाएं (Call 108)</span>
@@ -391,14 +409,14 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
 
           {/* Clinical Rationale & Action Steps */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
                 आवश्यक कदम (Actionable Steps)
               </span>
-              <ul className="space-y-2 text-xs text-slate-200">
+              <ul className="space-y-2 text-xs text-slate-700">
                 {result.triage.actionableSteps?.map((step: string, idx: number) => (
                   <li key={idx} className="flex items-start space-x-2">
-                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span className="text-teal-600 font-bold">✓</span>
                     <span>{step}</span>
                   </li>
                 ))}
@@ -406,24 +424,24 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
             </div>
 
             {/* Routed Facility Information */}
-            <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
                 अनुशंसित स्वास्थ्य केंद्र (Recommended Facility)
               </span>
               <div className="space-y-1.5">
-                <h4 className="font-bold text-white text-base">
+                <h4 className="font-bold text-slate-900 text-base">
                   {result.routing.selectedFacility.name}
                 </h4>
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-brand-400" />
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-teal-600" />
                   <span>{result.routing.selectedFacility.distanceKm} km दूर (~{result.routing.selectedFacility.travelMinutes} मिनट यात्रा)</span>
                 </p>
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-600" />
                   <span>प्रतीक्षा समय: ~{result.routing.estimatedWaitMinutes} मिनट (Duty Doctors: {result.routing.selectedFacility.doctorsOnDuty})</span>
                 </p>
-                <div className="mt-3 p-2.5 rounded-xl bg-slate-800 text-[11px] text-slate-300 border border-slate-700">
-                  <strong>यातायात सुझाव:</strong> {result.routing.transportAdvice}
+                <div className="mt-3 p-2.5 rounded-xl bg-white text-[11px] text-slate-700 border border-slate-200">
+                  <strong className="text-slate-900">यातायात सुझाव:</strong> {result.routing.transportAdvice}
                 </div>
               </div>
             </div>
@@ -433,7 +451,7 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
           <div className="flex items-center justify-between pt-2">
             <button
               onClick={() => setResult(null)}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs"
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 transition"
             >
               ← पुनः जांच करें (New Triage)
             </button>
@@ -441,7 +459,7 @@ export const AshaTriageWizard: React.FC<AshaTriageWizardProps> = ({ onComplete }
             {onComplete && (
               <button
                 onClick={onComplete}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>जांच पूर्ण (Complete)</span>
