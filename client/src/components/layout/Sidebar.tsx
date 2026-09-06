@@ -47,7 +47,31 @@ export const Sidebar: React.FC = () => {
     { name: 'Teleconsultation Triage', path: '/hospital/teleconsult', icon: Layers },
     { name: t('nav.opdManagement', 'Departments & OPD'), path: '/hospital/departments', icon: Layers },
     { name: t('nav.hospitalProfile', 'Hospital Profile'), path: '/hospital/profile', icon: Building2 },
+    { name: 'Cross-Facility Referrals', path: '/hospital/referrals', icon: GitFork },
     { name: t('nav.settings', 'Settings & Language'), path: '/hospital/settings', icon: Settings },
+  ];
+
+  const doctorLinks = [
+    { name: 'Consultation Desk', path: '/doctor/dashboard', icon: LayoutDashboard },
+    { name: 'OPD Waiting Queue', path: '/doctor/queue', icon: ListOrdered },
+    { name: 'Patient Review', path: '/doctor/patient-review', icon: User },
+    { name: 'Referral Transfers', path: '/hospital/referrals', icon: GitFork },
+    { name: 'Doctor Profile & Hours', path: '/doctor/profile', icon: Settings },
+  ];
+
+  const ashaLinks = [
+    { name: 'Field Dashboard', path: '/asha/dashboard', icon: LayoutDashboard },
+    { name: 'Triage & Register Wizard', path: '/asha/wizard', icon: Sparkles },
+    { name: 'Record Barriers', path: '/asha/barriers', icon: ShieldAlert },
+    { name: 'High-Risk Recalls (ANC/UIP)', path: '/asha/recalls', icon: ListOrdered },
+  ];
+
+  const governmentLinks = [
+    { name: 'District Overview', path: '/government/dashboard', icon: LayoutDashboard },
+    { name: 'Friction Heatmap', path: '/government/friction-map', icon: MapPin },
+    { name: 'Care Leakage Funnel', path: '/government/leakage', icon: GitFork },
+    { name: 'Population Barriers', path: '/government/barriers', icon: BarChart3 },
+    { name: 'Commission Resources', path: '/government/interventions', icon: Sliders },
   ];
 
   const adminLinks = [
@@ -64,8 +88,12 @@ export const Sidebar: React.FC = () => {
     { name: t('nav.settings', 'Settings & Language'), path: '/admin/settings', icon: Settings },
   ];
 
-  const links =
-    role === 'patient' ? patientLinks : role === 'hospital' ? hospitalLinks : adminLinks;
+  let links = patientLinks;
+  if (role === 'hospital') links = hospitalLinks;
+  else if (role === 'doctor') links = doctorLinks;
+  else if (role === 'asha') links = ashaLinks;
+  else if (role === 'government') links = governmentLinks;
+  else if (role === 'admin') links = adminLinks;
 
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between hidden md:flex">

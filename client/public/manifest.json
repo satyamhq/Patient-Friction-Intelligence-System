@@ -1,0 +1,19 @@
+{
+  "short_name": "PFIS",
+  "name": "PFIS - Patient Friction Intelligence System",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "description": "Layered, offline-first care-access and continuity platform for rural and underserved public healthcare.",
+  "categories": ["medical", "health", "government"],
+  "lang": "en-IN"
+}

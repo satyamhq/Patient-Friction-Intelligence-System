@@ -11,6 +11,17 @@ import adminRoutes from './adminRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import languageRoutes from './languageRoutes.js';
 
+// 5-Layer PFIS Modules
+import referralRoutes from './referralRoutes.js';
+import triageRoutes from './triageRoutes.js';
+import recallRoutes from './recallRoutes.js';
+import medicineRoutes from './medicineRoutes.js';
+import syncRoutes from './syncRoutes.js';
+import abhaRoutes from './abhaRoutes.js';
+import doctorRoutes from './doctorRoutes.js';
+import ashaRoutes from './ashaRoutes.js';
+import governmentRoutes from './governmentRoutes.js';
+
 const router = Router();
 
 router.use('/auth', authRoutes);
@@ -25,5 +36,16 @@ router.use('/interventions', interventionRoutes);
 router.use('/admin', adminRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/languages', languageRoutes);
+
+// Role-specific portals & 5-Layer PFIS Endpoints
+router.use('/referrals', referralRoutes);
+router.use('/triage', triageRoutes);
+router.use('/recall', recallRoutes);
+router.use('/medicines', medicineRoutes);
+router.use('/sync', syncRoutes);
+router.use('/abha', abhaRoutes);
+router.use('/doctor', doctorRoutes);
+router.use('/asha', ashaRoutes);
+router.use('/government', governmentRoutes);
 
 export default router;

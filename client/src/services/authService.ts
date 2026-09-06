@@ -7,6 +7,8 @@ export interface LoginResponse {
   token: string;
   user: User;
   profile?: any;
+  needsOnboarding?: boolean;
+  redirectPath?: string;
 }
 
 export const authService = {

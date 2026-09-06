@@ -1,4 +1,4 @@
-export type UserRole = 'patient' | 'hospital' | 'admin';
+export type UserRole = 'patient' | 'hospital' | 'admin' | 'doctor' | 'asha' | 'government';
 
 export interface User {
   id: string;
@@ -7,6 +7,8 @@ export interface User {
   role: UserRole;
   phone?: string;
   avatarUrl?: string;
+  needsOnboarding?: boolean;
+  needs_onboarding?: boolean;
 }
 
 export interface PatientLocation {

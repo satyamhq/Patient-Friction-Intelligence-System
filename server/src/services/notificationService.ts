@@ -1,14 +1,13 @@
-import { Types } from 'mongoose';
 import { Notification, NotificationType } from '../models/Notification.js';
 
 export class NotificationService {
   public static async createNotification(data: {
-    userId: string | Types.ObjectId;
+    userId: string;
     role: 'patient' | 'hospital' | 'admin';
     title: string;
     message: string;
     type: NotificationType;
-    relatedId?: string | Types.ObjectId;
+    relatedId?: string;
     relatedType?: string;
     actionUrl?: string;
   }) {
@@ -21,18 +20,18 @@ export class NotificationService {
     }
   }
 
-  public static async getUnreadCount(userId: string | Types.ObjectId): Promise<number> {
+  public static async getUnreadCount(userId: string): Promise<number> {
     return Notification.countDocuments({ userId, isRead: false });
   }
 
   public static async getUserNotifications(
-    userId: string | Types.ObjectId,
+    userId: string,
     limit: number = 20
   ) {
     return Notification.find({ userId }).sort({ createdAt: -1 }).limit(limit);
   }
 
-  public static async markAllAsRead(userId: string | Types.ObjectId) {
+  public static async markAllAsRead(userId: string) {
     return Notification.updateMany({ userId, isRead: false }, { isRead: true });
   }
 }

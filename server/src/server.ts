@@ -19,10 +19,15 @@ const startServer = async () => {
     console.log(`[PFIS Server] Environment: ${config.nodeEnv}`);
   });
 
-  const gracefulShutdown = (signal: string) => {
-    console.log(`[PFIS Server] ${signal} signal received. Closing HTTP server gracefully...`);
-    server.close(() => {
+  const gracefulShutdown = async (signal: string) => {
+    console.log(`[PFIS Server] ${signal} signal received. Closing HTTP server and database pool gracefully...`);
+    server.close(async () => {
       console.log('[PFIS Server] HTTP server closed.');
+      try {
+        const { closeDB } = await import('./config/database.js');
+        await closeDB();
+        console.log('[PFIS Server] Database connections terminated cleanly.');
+      } catch {}
       process.exit(0);
     });
   };

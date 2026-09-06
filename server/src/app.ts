@@ -51,7 +51,7 @@ export const createApp = (): Express => {
     })
   );
 
-  // Request Rate Limiting
+  // Request Rate Limiting (Global API)
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 1000, // Limit each IP to 1000 requests per window
@@ -63,6 +63,21 @@ export const createApp = (): Express => {
     },
   });
   app.use('/api', limiter);
+
+  // Stricter Rate Limiting for Authentication & Security-Critical Endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 60, // 60 attempts per 15 minutes
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message: 'Too many authentication attempts from this IP. Please wait 15 minutes.',
+    },
+  });
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/register', authLimiter);
+  app.use('/api/auth/onboard', authLimiter);
 
   // Logging
   if (config.nodeEnv !== 'test') {
@@ -77,13 +92,21 @@ export const createApp = (): Express => {
   const uploadsPath = path.resolve(process.cwd(), 'uploads');
   app.use('/uploads', express.static(uploadsPath));
 
-  // System Health Endpoint
+  // System Health & Enterprise Telemetry Endpoint
   app.get('/api/health', (req: Request, res: Response) => {
+    const memory = process.memoryUsage();
     res.status(200).json({
       status: 'healthy',
       system: 'Patient Friction Intelligence System (PFIS)',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      environment: config.nodeEnv,
+      memory: {
+        rssMb: Math.round((memory.rss / 1024 / 1024) * 100) / 100,
+        heapTotalMb: Math.round((memory.heapTotal / 1024 / 1024) * 100) / 100,
+        heapUsedMb: Math.round((memory.heapUsed / 1024 / 1024) * 100) / 100,
+      },
       mapMode: config.googleMapsApiKey ? 'Google Maps API Active' : 'Demo Map Engine Active',
     });
   });

@@ -10,12 +10,60 @@ import { FrictionEngine } from '../intelligence/friction/frictionEngine.js';
 import { RiskEngine } from '../intelligence/risk/riskEngine.js';
 import { FrictionProfile } from '../models/FrictionProfile.js';
 import { CareRisk } from '../models/CareRisk.js';
+import { Doctor } from '../models/Doctor.js';
+import { AshaWorker } from '../models/AshaWorker.js';
+import { GovernmentOfficial } from '../models/GovernmentOfficial.js';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { config } from '../config/env.js';
 
+export const ADMIN_EMAILS = [
+  'dhirajkumar464748@gmail.com',
+  'admin@pfis.org',
+  'admin@pfis.gov.in',
+  'satyam31sk@gmail.com',
+  'admin@gmail.com',
+];
+
+export const getDashboardPath = (role: string): string => {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'hospital':
+      return '/hospital/dashboard';
+    case 'doctor':
+      return '/doctor/dashboard';
+    case 'asha':
+      return '/asha/dashboard';
+    case 'government':
+      return '/government/dashboard';
+    case 'patient':
+    default:
+      return '/patient/dashboard';
+  }
+};
+
 export class AuthController {
+  public static async loadUserProfile(user: any): Promise<any> {
+    if (!user) return null;
+    const userId = user._id || user.id;
+    if (user.role === 'patient') {
+      return await Patient.findOne({ userId })
+        .populate('activeFrictionProfileId')
+        .populate('activeCareRiskId');
+    } else if (user.role === 'hospital') {
+      return await Hospital.findOne({ userId });
+    } else if (user.role === 'doctor') {
+      return await Doctor.findOne({ userId });
+    } else if (user.role === 'asha') {
+      return await AshaWorker.findOne({ userId });
+    } else if (user.role === 'government') {
+      return await GovernmentOfficial.findOne({ userId });
+    }
+    return null;
+  }
+
   public static async register(req: Request, res: Response): Promise<void> {
     try {
       const { name, email, password, role, phone, ...extraDetails } = req.body;
@@ -25,7 +73,8 @@ export class AuthController {
         return;
       }
 
-      const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+      const normalizedEmail = email.toLowerCase().trim();
+      const existingUser = await User.findOne({ email: normalizedEmail });
       if (existingUser) {
         res.status(409).json({ success: false, message: 'An account with this email already exists.' });
         return;
@@ -34,15 +83,26 @@ export class AuthController {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
-      const normalizedEmail = email.toLowerCase().trim();
-      const ADMIN_EMAILS = ['dhirajkumar464748@gmail.com', 'admin@pfis.org'];
       const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
 
-      let userRole: 'admin' | 'hospital' | 'patient' = 'patient';
+      // CRITICAL SECURITY RULE: Admin role can NEVER be chosen via public registration
+      if (role === 'admin' && !isAdmin) {
+        await AuditService.log('SECURITY_ALERT_UNAUTHORIZED_ADMIN_REGISTRATION', 'User', req, {
+          actorRole: 'unauthenticated',
+          details: { attemptedRole: 'admin', email: normalizedEmail },
+        });
+        res.status(403).json({
+          success: false,
+          message: 'Security Alert: Administrator accounts cannot be self-registered.',
+        });
+        return;
+      }
+
+      let userRole: any = 'patient';
       if (isAdmin) {
         userRole = 'admin';
-      } else if (role === 'hospital') {
-        userRole = 'hospital';
+      } else if (['hospital', 'doctor', 'asha', 'government', 'patient'].includes(role)) {
+        userRole = role;
       } else {
         userRole = 'patient';
       }
@@ -53,6 +113,8 @@ export class AuthController {
         passwordHash,
         role: userRole,
         phone,
+        needsOnboarding: false,
+        isActive: true,
       });
 
       let profileData: any = null;
@@ -64,7 +126,7 @@ export class AuthController {
         const newPatient = await Patient.create({
           userId: newUser._id,
           patientCode,
-          age: extraDetails.age || 42,
+          age: extraDetails.age || 38,
           gender: extraDetails.gender || 'female',
           preferredLanguage: extraDetails.preferredLanguage || 'Hindi',
           phone: phone || extraDetails.phone,
@@ -76,7 +138,7 @@ export class AuthController {
           appointmentFlexibility: extraDetails.appointmentFlexibility || 'inflexible_daily_wage',
           residenceType: extraDetails.residenceType || 'rural_remote',
           location: {
-            address: extraDetails.address || 'UniCenter, LPU Campus',
+            address: extraDetails.address || 'Village Sub-Center',
             city: extraDetails.city || 'Phagwara',
             state: extraDetails.state || 'Punjab',
             pincode: extraDetails.pincode || '144411',
@@ -91,7 +153,7 @@ export class AuthController {
 
         // Initialize Friction & Risk with real closest hospital distance
         const allH = await Hospital.find({});
-        let initialDist = 2.7;
+        let initialDist = 3.5;
         let initialHosp: any = null;
         if (allH && allH.length > 0) {
           let minD = 999999;
@@ -123,31 +185,79 @@ export class AuthController {
         newPatient.activeFrictionProfileId = frictionProfile._id as any;
         newPatient.activeCareRiskId = careRisk._id as any;
         await newPatient.save();
-
         profileData = newPatient;
       } else if (userRole === 'hospital') {
-        const newHospital = await Hospital.create({
+        profileData = await Hospital.create({
           userId: newUser._id,
-          name: extraDetails.hospitalName || name,
-          type: extraDetails.type || 'Government',
-          address: extraDetails.address || 'Civil Lines Medical Enclave',
-          city: extraDetails.city || 'Ranchi',
-          state: extraDetails.state || 'Jharkhand',
-          pincode: extraDetails.pincode || '834001',
-          latitude: extraDetails.latitude || 23.3629,
-          longitude: extraDetails.longitude || 85.3262,
+          name: extraDetails.hospitalName || `${name} Health Facility`,
+          type: extraDetails.type || 'Community Health Center',
+          address: extraDetails.address || 'Medical Road',
+          city: extraDetails.city || 'Phagwara',
+          state: extraDetails.state || 'Punjab',
+          pincode: extraDetails.pincode || '144401',
+          latitude: extraDetails.latitude || 31.2229,
+          longitude: extraDetails.longitude || 75.7725,
           geoJSON: {
             type: 'Point',
-            coordinates: [extraDetails.longitude || 85.3262, extraDetails.latitude || 23.3629],
+            coordinates: [extraDetails.longitude || 75.7725, extraDetails.latitude || 31.2229],
           },
-          phone: phone || '0651-2441234',
-          email: email.toLowerCase().trim(),
+          phone: phone || '01824-260234',
+          email: normalizedEmail,
           emergencyAvailable: true,
-          totalBeds: extraDetails.totalBeds || 300,
-          availableBeds: extraDetails.availableBeds || 45,
+          totalBeds: extraDetails.totalBeds || 120,
+          availableBeds: extraDetails.availableBeds || 28,
           specialistAvailable: true,
         });
-        profileData = newHospital;
+      } else if (userRole === 'doctor') {
+        profileData = await Doctor.create({
+          userId: newUser._id,
+          name: name.trim(),
+          email: normalizedEmail,
+          phone,
+          hospitalName: extraDetails.hospitalName || 'Community Health Center',
+          department: extraDetails.department || 'General Medicine',
+          qualification: extraDetails.qualification || 'MBBS',
+          registrationNumber: extraDetails.registrationNumber || `REG-${Math.floor(10000 + Math.random() * 90000)}`,
+          specialization: extraDetails.specialization || 'General Practitioner',
+          experienceYears: extraDetails.experienceYears || 5,
+          opdTimings: '09:00 AM - 02:00 PM',
+          availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          consultationFee: 0,
+          isAvailable: true,
+          totalPatientsConsulted: 0,
+        });
+      } else if (userRole === 'asha') {
+        profileData = await AshaWorker.create({
+          userId: newUser._id,
+          workerId: `ASHA-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: name.trim(),
+          email: normalizedEmail,
+          phone: phone || '9876501234',
+          assignedVillage: extraDetails.assignedVillage || 'Khera Village',
+          assignedWard: extraDetails.assignedWard || 'Ward 3',
+          district: extraDetails.district || 'Kapurthala',
+          state: extraDetails.state || 'Punjab',
+          primaryHealthCenter: extraDetails.primaryHealthCenter || 'PHC Chaheru',
+          communityPopulation: 1250,
+          assignedPatientsCount: 160,
+          activeCases: 14,
+          languagesSpoken: ['Punjabi', 'Hindi'],
+          isFieldActive: true,
+        });
+      } else if (userRole === 'government') {
+        profileData = await GovernmentOfficial.create({
+          userId: newUser._id,
+          name: name.trim(),
+          email: normalizedEmail,
+          phone: phone || '01822-232145',
+          officialDesignation: extraDetails.officialDesignation || 'District Health Officer',
+          department: 'Department of Health & Family Welfare',
+          jurisdictionLevel: extraDetails.jurisdictionLevel || 'DISTRICT',
+          district: extraDetails.district || 'Kapurthala',
+          state: extraDetails.state || 'Punjab',
+          officeAddress: 'District Health Administrative Complex',
+          clearanceLevel: 'LEVEL_3_DISTRICT',
+        });
       }
 
       const token = generateToken({
@@ -172,8 +282,10 @@ export class AuthController {
           email: newUser.email,
           role: newUser.role,
           phone: newUser.phone,
+          needsOnboarding: false,
         },
         profile: profileData,
+        redirectPath: getDashboardPath(newUser.role),
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Registration failed.' });
@@ -189,7 +301,8 @@ export class AuthController {
         return;
       }
 
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      const normalizedEmail = email.toLowerCase().trim();
+      const user = await User.findOne({ email: normalizedEmail });
       if (!user) {
         res.status(401).json({ success: false, message: 'Invalid email address or password.' });
         return;
@@ -201,21 +314,14 @@ export class AuthController {
         return;
       }
 
-      const normalizedEmail = user.email.toLowerCase().trim();
-      const ADMIN_EMAILS = ['dhirajkumar464748@gmail.com', 'admin@pfis.org'];
       if (ADMIN_EMAILS.includes(normalizedEmail) && user.role !== 'admin') {
         user.role = 'admin';
+        user.needsOnboarding = false;
         await user.save();
       }
 
-      let profile: any = null;
-      if (user.role === 'patient') {
-        profile = await Patient.findOne({ userId: user._id })
-          .populate('activeFrictionProfileId')
-          .populate('activeCareRiskId');
-      } else if (user.role === 'hospital') {
-        profile = await Hospital.findOne({ userId: user._id });
-      }
+      const needsOnboarding = !!(user.needsOnboarding || user.needs_onboarding);
+      const profile = needsOnboarding ? null : await AuthController.loadUserProfile(user);
 
       const token = generateToken({
         userId: user._id.toString(),
@@ -231,7 +337,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'Login successful.',
+        message: needsOnboarding ? 'Welcome to PFIS! Please complete onboarding.' : 'Login successful.',
         token,
         user: {
           id: user._id,
@@ -239,8 +345,12 @@ export class AuthController {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          needsOnboarding,
         },
         profile,
+        needsOnboarding,
+        redirectPath: needsOnboarding ? '/onboarding' : getDashboardPath(user.role),
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Login failed.' });
@@ -255,14 +365,8 @@ export class AuthController {
         return;
       }
 
-      let profile: any = null;
-      if (user.role === 'patient') {
-        profile = await Patient.findOne({ userId: user._id })
-          .populate('activeFrictionProfileId')
-          .populate('activeCareRiskId');
-      } else if (user.role === 'hospital') {
-        profile = await Hospital.findOne({ userId: user._id });
-      }
+      const needsOnboarding = !!(user.needsOnboarding || user.needs_onboarding);
+      const profile = needsOnboarding ? null : await AuthController.loadUserProfile(user);
 
       res.status(200).json({
         success: true,
@@ -272,8 +376,12 @@ export class AuthController {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          needsOnboarding,
         },
         profile,
+        needsOnboarding,
+        redirectPath: needsOnboarding ? '/onboarding' : getDashboardPath(user.role),
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Failed to fetch session.' });
@@ -290,147 +398,304 @@ export class AuthController {
     res.status(200).json({ success: true, message: 'Logged out successfully.' });
   }
 
+  public static async completeOnboarding(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { role, profileDetails } = req.body;
+      const requestedRole = (role || '').toLowerCase().trim();
+
+      // CRITICAL SECURITY RULE: Admin must NEVER be selectable during public onboarding
+      if (requestedRole === 'admin') {
+        await AuditService.log('SECURITY_ALERT_UNAUTHORIZED_ADMIN_ONBOARDING_ATTEMPT', 'User', req, {
+          userId: user._id,
+          actorRole: user.role,
+          details: { attemptedRole: 'admin', email: user.email },
+        });
+        res.status(403).json({
+          success: false,
+          message: 'Security Alert: Administrator accounts cannot be self-provisioned during onboarding.',
+        });
+        return;
+      }
+
+      const VALID_ROLES = ['patient', 'hospital', 'doctor', 'asha', 'government'];
+      if (!VALID_ROLES.includes(requestedRole)) {
+        res.status(400).json({
+          success: false,
+          message: `Invalid role selected. Must be one of: [${VALID_ROLES.join(', ')}]`,
+        });
+        return;
+      }
+
+      user.role = requestedRole as any;
+      user.needsOnboarding = false;
+      user.needs_onboarding = false;
+      if (typeof user.save === 'function') {
+        await user.save();
+      }
+
+      let profile: any = null;
+      const details = profileDetails || {};
+
+      if (requestedRole === 'patient') {
+        const count = await Patient.countDocuments();
+        const patientCode = `PAT-${1000 + count + 1}`;
+        profile = await Patient.create({
+          userId: user._id,
+          patientCode,
+          name: user.name,
+          age: details.age || 36,
+          gender: details.gender || 'female',
+          preferredLanguage: details.preferredLanguage || 'Hindi',
+          phone: details.phone || user.phone || '9876543210',
+          transportAvailability: details.transportAvailability || 'moderate',
+          digitalAccessLevel: details.digitalAccessLevel || 'moderate',
+          documentationStatus: details.documentationStatus || 'complete',
+          financialAccessibility: details.financialAccessibility || 'moderate_budget',
+          residenceType: details.residenceType || 'rural_remote',
+          location: {
+            address: details.address || 'Village Center',
+            city: details.city || 'Phagwara',
+            state: details.state || 'Punjab',
+            pincode: details.pincode || '144411',
+            latitude: details.latitude || 31.2533,
+            longitude: details.longitude || 75.7042,
+            geoJSON: { type: 'Point', coordinates: [details.longitude || 75.7042, details.latitude || 31.2533] },
+          },
+        });
+
+        const dummyHosp = { name: 'Civil Hospital', distance: 4.5, type: 'Hospital' };
+        const frictionCalc = FrictionEngine.calculate(profile.toObject(), dummyHosp, 4.5);
+        const frictionProfile = await FrictionProfile.create({
+          patientId: profile._id,
+          ...frictionCalc,
+        });
+        const riskCalc = RiskEngine.evaluate(frictionCalc);
+        const careRisk = await CareRisk.create({
+          patientId: profile._id,
+          frictionProfileId: frictionProfile._id,
+          ...riskCalc,
+        });
+        profile.activeFrictionProfileId = frictionProfile._id as any;
+        profile.activeCareRiskId = careRisk._id as any;
+        if (profile && typeof profile.save === 'function') {
+          await profile.save();
+        }
+      } else if (requestedRole === 'hospital') {
+        profile = await Hospital.create({
+          userId: user._id,
+          name: details.facilityName || `${user.name} Medical Facility`,
+          type: details.facilityType || 'Community Health Center',
+          address: details.address || 'GT Road Health Campus',
+          city: details.city || 'Kapurthala',
+          state: details.state || 'Punjab',
+          pincode: details.pincode || '144601',
+          latitude: 31.3802,
+          longitude: 75.3853,
+          geoJSON: { type: 'Point', coordinates: [75.3853, 31.3802] },
+          phone: details.phone || user.phone || '01822-232100',
+          email: user.email,
+          emergencyAvailable: true,
+          totalBeds: details.totalBeds || 120,
+          availableBeds: details.availableBeds || 35,
+          specialistAvailable: true,
+        });
+      } else if (requestedRole === 'doctor') {
+        profile = await Doctor.create({
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          phone: details.phone || user.phone || '9876543210',
+          hospitalName: details.hospitalName || 'Sub-Divisional Hospital / PHC',
+          department: details.department || 'General Medicine',
+          qualification: details.qualification || 'MBBS',
+          registrationNumber: details.registrationNumber || `REG-${Math.floor(10000 + Math.random() * 90000)}`,
+          specialization: details.specialization || 'Family Medicine',
+          experienceYears: details.experienceYears || 5,
+          opdTimings: details.opdTimings || '09:00 AM - 02:00 PM',
+          availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          consultationFee: 0,
+          isAvailable: true,
+          totalPatientsConsulted: 0,
+        });
+      } else if (requestedRole === 'asha') {
+        profile = await AshaWorker.create({
+          userId: user._id,
+          workerId: `ASHA-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: user.name,
+          email: user.email,
+          phone: details.phone || user.phone || '9876501234',
+          assignedVillage: details.assignedVillage || 'Khera Village',
+          assignedWard: details.assignedWard || 'Ward 3',
+          district: details.district || 'Kapurthala',
+          state: details.state || 'Punjab',
+          primaryHealthCenter: details.primaryHealthCenter || 'PHC Chaheru',
+          communityPopulation: 1200,
+          assignedPatientsCount: 150,
+          activeCases: 12,
+          languagesSpoken: ['Punjabi', 'Hindi'],
+          isFieldActive: true,
+        });
+      } else if (requestedRole === 'government') {
+        profile = await GovernmentOfficial.create({
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          phone: details.phone || user.phone || '01822-232145',
+          officialDesignation: details.officialDesignation || 'District Health Officer',
+          department: 'Department of Health & Family Welfare',
+          jurisdictionLevel: details.jurisdictionLevel || 'DISTRICT',
+          district: details.district || 'Kapurthala',
+          state: details.state || 'Punjab',
+          officeAddress: details.officeAddress || 'District Administrative Complex',
+          clearanceLevel: 'LEVEL_3_DISTRICT',
+        });
+      }
+
+      const updatedToken = generateToken({
+        userId: (user._id || user.id || '').toString(),
+        email: user.email,
+        role: user.role,
+      });
+
+      await AuditService.log('USER_ONBOARDING_COMPLETED', 'User', req, {
+        userId: user._id,
+        actorRole: user.role,
+        details: { assignedRole: requestedRole },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Onboarding completed successfully. Welcome to PFIS!',
+        token: updatedToken,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          needsOnboarding: false,
+        },
+        profile,
+        redirectPath: getDashboardPath(requestedRole),
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to complete onboarding' });
+    }
+  }
+
   public static async provisionGoogleUser(
     email: string,
     name: string,
     avatarUrl: string,
     role: any,
     req: Request
-  ): Promise<{ token: string; user: any; profile: any }> {
+  ): Promise<{ token: string; user: any; profile: any; isNewUser: boolean; needsOnboarding: boolean; redirectPath: string }> {
     const normalizedEmail = (email || '').toLowerCase().trim();
-    const ADMIN_EMAILS = ['dhirajkumar464748@gmail.com', 'admin@pfis.org'];
     const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
-
-    // ONLY whitelisted admin emails get Admin access. All others get hospital or patient.
-    let assignedRole: 'admin' | 'hospital' | 'patient' = 'patient';
-    if (isAdmin) {
-      assignedRole = 'admin';
-    } else if (role === 'hospital') {
-      assignedRole = 'hospital';
-    } else {
-      assignedRole = 'patient';
-    }
 
     let user = await User.findOne({ email: normalizedEmail });
 
-    if (!user) {
-      const salt = await bcrypt.genSalt(10);
-      const dummyPasswordHash = await bcrypt.hash(`google_${Date.now()}_${Math.random()}`, salt);
-
-      user = await User.create({
-        name: name || (isAdmin ? 'Dhiraj Kumar (Executive Admin)' : 'Google User'),
-        email: normalizedEmail,
-        passwordHash: dummyPasswordHash,
-        role: assignedRole,
-        avatarUrl,
-        isActive: true,
-      });
-
-      if (user.role === 'patient') {
-        const count = await Patient.countDocuments();
-        const patientCode = `PAT-${1000 + count + 1}`;
-
-        const newPatient = await Patient.create({
-          userId: user._id,
-          patientCode,
-          age: 38,
-          gender: 'other',
-          preferredLanguage: 'Hindi',
-          transportAvailability: 'moderate',
-          digitalAccessLevel: 'moderate',
-          familySupport: 'moderate',
-          documentationStatus: 'complete',
-          financialAccessibility: 'moderate_budget',
-          appointmentFlexibility: 'flexible',
-          residenceType: 'semi_urban',
-          location: {
-            address: 'UniCenter, LPU Campus',
-            city: 'Phagwara',
-            state: 'Punjab',
-            pincode: '144411',
-            latitude: 31.2533,
-            longitude: 75.7042,
-            geoJSON: {
-              type: 'Point',
-              coordinates: [75.7042, 31.2533],
-            },
-          },
-        });
-
-        // Calculate initial friction based on real closest hospital
-        const allH = await Hospital.find({});
-        let initialDist = 2.7;
-        let initialHosp: any = null;
-        if (allH && allH.length > 0) {
-          let minD = 999999;
-          for (const h of allH) {
-            const d = FrictionEngine.calculateHaversineDistance(31.2533, 75.7042, h.latitude, h.longitude);
-            if (d < minD) {
-              minD = d;
-              initialHosp = h;
-            }
-          }
-          if (minD < 999999) initialDist = Math.round(minD * 10) / 10;
-        }
-
-        const frictionCalc = FrictionEngine.calculate(newPatient.toObject(), initialHosp, initialDist);
-        const frictionProfile = await FrictionProfile.create({
-          patientId: newPatient._id,
-          ...frictionCalc,
-        });
-
-        const riskCalc = RiskEngine.evaluate(frictionCalc);
-        const careRisk = await CareRisk.create({
-          patientId: newPatient._id,
-          frictionProfileId: frictionProfile._id,
-          ...riskCalc,
-        });
-
-        newPatient.activeFrictionProfileId = frictionProfile._id as any;
-        newPatient.activeCareRiskId = careRisk._id as any;
-        await newPatient.save();
-      } else if (user.role === 'hospital') {
-        await Hospital.create({
-          userId: user._id,
-          name: `${name} Medical Facility`,
-          type: 'Private/Charitable',
-          address: 'GT Road Healthcare Plaza',
-          city: 'Phagwara',
-          state: 'Punjab',
-          pincode: '144401',
-          latitude: 31.2229,
-          longitude: 75.7725,
-          geoJSON: {
-            type: 'Point',
-            coordinates: [75.7725, 31.2229],
-          },
-          phone: '01824-260234',
-          email: normalizedEmail,
-          emergencyAvailable: true,
-          totalBeds: 150,
-          availableBeds: 25,
-          specialistAvailable: true,
-        });
-      }
-    } else {
-      if (user.role !== assignedRole) {
-        user.role = assignedRole;
+    if (user) {
+      // Existing user in MongoDB
+      if (isAdmin && user.role !== 'admin') {
+        user.role = 'admin';
+        user.needsOnboarding = false;
         await user.save();
       }
       if (avatarUrl && !user.avatarUrl) {
         user.avatarUrl = avatarUrl;
         await user.save();
       }
+
+      const needsOnboarding = !!(user.needsOnboarding || user.needs_onboarding);
+      const profile = needsOnboarding ? null : await AuthController.loadUserProfile(user);
+
+      const token = generateToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      });
+
+      await AuditService.log('AUTH_GOOGLE_LOGIN_EXISTING', 'User', req, {
+        userId: user._id,
+        actorRole: user.role,
+        details: { email: user.email, provider: 'google', needsOnboarding },
+      });
+
+      return {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          needsOnboarding,
+        },
+        profile,
+        isNewUser: false,
+        needsOnboarding,
+        redirectPath: needsOnboarding ? '/onboarding' : getDashboardPath(user.role),
+      };
     }
 
-    let profile: any = null;
-    if (user.role === 'patient') {
-      profile = await Patient.findOne({ userId: user._id })
-        .populate('activeFrictionProfileId')
-        .populate('activeCareRiskId');
-    } else if (user.role === 'hospital') {
-      profile = await Hospital.findOne({ userId: user._id });
+    // New user in MongoDB
+    const salt = await bcrypt.genSalt(10);
+    const dummyPasswordHash = await bcrypt.hash(`google_${Date.now()}_${Math.random()}`, salt);
+
+    if (isAdmin) {
+      user = await User.create({
+        name: name || 'Dhiraj Kumar (Executive Admin)',
+        email: normalizedEmail,
+        passwordHash: dummyPasswordHash,
+        role: 'admin',
+        avatarUrl,
+        needsOnboarding: false,
+        isActive: true,
+      });
+
+      const token = generateToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      });
+
+      return {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          needsOnboarding: false,
+        },
+        profile: null,
+        isNewUser: false,
+        needsOnboarding: false,
+        redirectPath: '/admin/dashboard',
+      };
     }
+
+    // New Public User: Minimal secure user record, prompts onboarding (Admin never selectable!)
+    user = await User.create({
+      name: name || 'PFIS User',
+      email: normalizedEmail,
+      passwordHash: dummyPasswordHash,
+      role: 'patient', // provisional until onboarding choice
+      avatarUrl,
+      needsOnboarding: true,
+      isActive: true,
+    });
 
     const token = generateToken({
       userId: user._id.toString(),
@@ -438,10 +703,10 @@ export class AuthController {
       role: user.role,
     });
 
-    await AuditService.log('AUTH_GOOGLE_LOGIN', 'User', req, {
+    await AuditService.log('AUTH_GOOGLE_NEW_USER_CREATED', 'User', req, {
       userId: user._id,
       actorRole: user.role,
-      details: { email: user.email, provider: 'google' },
+      details: { email: user.email, provider: 'google', needsOnboarding: true },
     });
 
     return {
@@ -453,8 +718,12 @@ export class AuthController {
         role: user.role,
         phone: user.phone,
         avatarUrl: user.avatarUrl,
+        needsOnboarding: true,
       },
-      profile,
+      profile: null,
+      isNewUser: true,
+      needsOnboarding: true,
+      redirectPath: '/onboarding',
     };
   }
 
@@ -466,14 +735,17 @@ export class AuthController {
     req: Request,
     res: Response
   ): Promise<void> {
-    const { token, user, profile } = await AuthController.provisionGoogleUser(email, name, avatarUrl, role, req);
+    const { token, user, profile, isNewUser, needsOnboarding, redirectPath } = await AuthController.provisionGoogleUser(email, name, avatarUrl, role, req);
 
     res.status(200).json({
       success: true,
-      message: 'Google authentication successful.',
+      message: needsOnboarding ? 'Welcome to PFIS! Please complete onboarding.' : 'Google authentication successful.',
       token,
       user,
       profile,
+      isNewUser,
+      needsOnboarding,
+      redirectPath,
     });
   }
 

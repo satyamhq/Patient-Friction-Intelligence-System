@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
-import { connectDB } from '../config/database.js';
+import { connectDB, closeDB } from '../config/database.js';
 import { User } from '../models/User.js';
 import { Patient } from '../models/Patient.js';
 import { Hospital } from '../models/Hospital.js';
@@ -581,7 +580,7 @@ export const runAutomaticSeed = async () => {
 const seedDatabase = async () => {
   await connectDB();
   await runAutomaticSeed();
-  await mongoose.disconnect();
+  await closeDB();
   process.exit(0);
 };
 

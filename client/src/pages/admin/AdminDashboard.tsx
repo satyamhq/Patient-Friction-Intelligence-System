@@ -109,30 +109,105 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Official Master Admin Verification Bar */}
-      <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Master Administrator Account:</span>
-              <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 font-mono text-[11px] font-bold">
-                admin@pfis.org
-              </span>
+      {/* 5-Layer Public Healthcare Continuity & Accountability Panel (SIH 2026 Mandate) */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 shadow-xl space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-600/30">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Role: System Health Director • Permanent Master Admin Security • MongoDB Storage Active
-            </p>
+            <div>
+              <h2 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
+                <span>District Public Health Continuity & Accountability Telemetry</span>
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
+                  5-Layer Live
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400">
+                District: <strong>Ranchi</strong> • Sub-Centres: 48 • PHCs: 14 • CHCs: 4 • District Hospital: 1
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Nav to 3 MVP Demo Portals */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/asha"
+              className="px-3 py-1.5 rounded-xl bg-pink-600/20 text-pink-300 hover:bg-pink-600/30 border border-pink-500/30 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <span>1. ASHA Portal (/asha)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              to="/doctor"
+              className="px-3 py-1.5 rounded-xl bg-cyan-600/20 text-cyan-300 hover:bg-cyan-600/30 border border-cyan-500/30 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <span>2. Doctor PHC (/doctor)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              to="/hospital/referrals"
+              className="px-3 py-1.5 rounded-xl bg-rose-600/20 text-rose-300 hover:bg-rose-600/30 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <span>3. DH Referral Desk (/hospital/referrals)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-            Audit Stream Live
-          </span>
+        {/* 4 Public Health Governance Indicator Tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+              Cross-Facility Referral Completion
+            </span>
+            <div className="mt-1.5 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-emerald-400">78.4%</span>
+              <span className="text-[11px] text-emerald-300 font-semibold">42 / 54 Resolved</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              8 in-transit with GPS transport voucher • 4 dropped before DH intake
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+              High-Risk Defaulter Recall Closure
+            </span>
+            <div className="mt-1.5 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-pink-400">85.7%</span>
+              <span className="text-[11px] text-pink-300 font-semibold">24 of 28 Resolved</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Automated ASHA home visits closed loop for missed ANC & child immunizations
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+              Essential Drug List (EDL) Availability
+            </span>
+            <div className="mt-1.5 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-amber-400">92.3%</span>
+              <span className="text-[11px] text-rose-300 font-bold">1 Stockout Alert</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Metformin stockout at Angara PHC • Patients routed to Silli CHC
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
+              e-Sanjeevani Teleconsult Volume
+            </span>
+            <div className="mt-1.5 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-cyan-400">142</span>
+              <span className="text-[11px] text-cyan-300 font-semibold">This Week</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Sub-Centre assisted teleconsults preventing 4,800+ km of patient rural travel
+            </p>
+          </div>
         </div>
       </div>
 

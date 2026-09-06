@@ -16,6 +16,9 @@ router.post('/google/callback', AuthController.googleCallback);
 router.post('/forgot-password', AuthController.forgotPassword);
 router.post('/reset-password', AuthController.resetPassword);
 router.get('/me', authenticate, AuthController.getMe);
+router.post('/complete-onboarding', authenticate, AuthController.completeOnboarding);
+router.post('/onboarding', authenticate, AuthController.completeOnboarding);
+router.post('/onboard', authenticate, AuthController.completeOnboarding);
 router.post('/logout', authenticate, AuthController.logout);
 
 export default router;

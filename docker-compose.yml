@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  pfis-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pfis_platform_prod
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_TYPE=mongodb
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CLIENT_URL=http://localhost:5000
+    volumes:
+      - pfis_uploads:/app/server/uploads
+
+volumes:
+  pfis_uploads:
+    driver: local

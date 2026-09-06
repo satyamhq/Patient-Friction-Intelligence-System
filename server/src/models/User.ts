@@ -1,22 +1,26 @@
 import { createSQLModel } from '../database/sqlModel.js';
 
-export type UserRole = 'patient' | 'hospital' | 'admin';
+export type UserRole = 'patient' | 'hospital' | 'admin' | 'doctor' | 'asha' | 'government';
 
 export interface IUser {
   _id?: string;
   id?: string;
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
+  password_hash?: string;
   role: UserRole;
   phone?: string;
+  isAdmin?: boolean;
+  is_admin?: boolean;
   isActive?: boolean;
   avatarUrl?: string;
   preferredLanguage?: string;
   preferredDialect?: string;
   simpleLanguageMode?: boolean;
   voiceEnabled?: boolean;
-  textToSpeechEnabled?: boolean;
+  needsOnboarding?: boolean;
+  needs_onboarding?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   save?: () => Promise<any>;

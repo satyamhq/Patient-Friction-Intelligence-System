@@ -71,7 +71,142 @@ class MySQLDriver implements IDatabaseClient {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Embedded Relational SQL Storage Engine (Zero-setup PostgreSQL/MySQL compatible)
+// 3. MongoDB Driver (Native MongoClient)
+// ---------------------------------------------------------------------------
+class MongoDBDriver implements IDatabaseClient {
+  private client: any;
+  private db: any;
+
+  constructor(client: any, db: any) {
+    this.client = client;
+    this.db = db;
+  }
+
+  async query<T = any>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
+    const trimmed = sql.trim();
+    if (/^(CREATE TABLE|CREATE INDEX)/i.test(trimmed)) {
+      return { rows: [], rowCount: 0 };
+    }
+
+    // INSERT INTO
+    const insertMatch = trimmed.match(/INSERT\s+INTO\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
+    if (insertMatch) {
+      const collectionName = insertMatch[1].toLowerCase();
+      const cols = insertMatch[2].split(',').map((c) => c.trim().toLowerCase());
+      const record: any = {};
+      cols.forEach((col, idx) => {
+        record[col] = params[idx] !== undefined ? params[idx] : null;
+      });
+      if (record.id && !record._id) record._id = record.id;
+      const coll = this.db.collection(collectionName);
+      if (record.id) {
+        await coll.updateOne({ id: record.id }, { $set: record }, { upsert: true });
+      } else {
+        await coll.insertOne(record);
+      }
+      return { rows: [record as T], rowCount: 1 };
+    }
+
+    // SELECT
+    const selectMatch = trimmed.match(/SELECT\s+(.+?)\s+FROM\s+([a-zA-Z0-9_]+)(.*)/is);
+    if (selectMatch) {
+      const collectionName = selectMatch[2].trim().toLowerCase();
+      const remainder = selectMatch[3] || '';
+      const coll = this.db.collection(collectionName);
+
+      const whereMatch = remainder.match(/WHERE\s+(.+?)(ORDER BY|LIMIT|$)/is);
+      let queryFilter: any = {};
+      if (whereMatch) {
+        const whereClause = whereMatch[1].trim();
+        const idMatch = whereClause.match(/id\s*=\s*\$1/i);
+        if (idMatch && params.length > 0) {
+          queryFilter = { $or: [{ id: params[0] }, { _id: params[0] }] };
+        } else {
+          const eqMatch = whereClause.match(/([a-zA-Z0-9_]+)\s*=\s*\$(\d+)/i);
+          if (eqMatch) {
+            const col = eqMatch[1].toLowerCase();
+            const pIdx = parseInt(eqMatch[2], 10) - 1;
+            queryFilter[col] = params[pIdx];
+          }
+        }
+      }
+
+      let cursor = coll.find(queryFilter);
+
+      const orderMatch = remainder.match(/ORDER BY\s+([a-zA-Z0-9_]+)\s*(ASC|DESC)?/i);
+      if (orderMatch) {
+        const col = orderMatch[1].toLowerCase();
+        const desc = (orderMatch[2] || 'ASC').toUpperCase() === 'DESC';
+        cursor = cursor.sort({ [col]: desc ? -1 : 1 });
+      }
+
+      const limitMatch = remainder.match(/LIMIT\s+(\d+|\$\d+|\?)/i);
+      if (limitMatch) {
+        const limitNum = parseInt(limitMatch[1], 10) || 50;
+        cursor = cursor.limit(limitNum);
+      }
+
+      const docs = await cursor.toArray();
+      return { rows: docs as T[], rowCount: docs.length };
+    }
+
+    // UPDATE
+    const updateMatch = trimmed.match(/UPDATE\s+([a-zA-Z0-9_]+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/is);
+    if (updateMatch) {
+      const collectionName = updateMatch[1].toLowerCase();
+      const setClause = updateMatch[2];
+      const whereClause = updateMatch[3];
+      const coll = this.db.collection(collectionName);
+
+      const setPairs = setClause.split(',').map((p) => p.trim());
+      const setObj: any = {};
+      setPairs.forEach((pair, pIdx) => {
+        const [c] = pair.split('=').map((s) => s.trim().toLowerCase());
+        if (params[pIdx] !== undefined) setObj[c] = params[pIdx];
+      });
+
+      let whereFilter: any = {};
+      const idMatch = whereClause.match(/id\s*=\s*\$(\d+)/i);
+      if (idMatch) {
+        const pIdx = parseInt(idMatch[1], 10) - 1;
+        whereFilter = { $or: [{ id: params[pIdx] }, { _id: params[pIdx] }] };
+      }
+
+      const result = await coll.updateMany(whereFilter, { $set: setObj });
+      return { rows: [], rowCount: result.modifiedCount || 0 };
+    }
+
+    // DELETE
+    const deleteMatch = trimmed.match(/DELETE\s+FROM\s+([a-zA-Z0-9_]+)(.*)/is);
+    if (deleteMatch) {
+      const collectionName = deleteMatch[1].toLowerCase();
+      const remainder = deleteMatch[2] || '';
+      const coll = this.db.collection(collectionName);
+      let whereFilter: any = {};
+      const idMatch = remainder.match(/id\s*=\s*\$1/i);
+      if (idMatch && params.length > 0) {
+        whereFilter = { $or: [{ id: params[0] }, { _id: params[0] }] };
+      }
+      const result = await coll.deleteMany(whereFilter);
+      return { rows: [], rowCount: result.deletedCount || 0 };
+    }
+
+    return { rows: [], rowCount: 0 };
+  }
+
+  async close(): Promise<void> {
+    if (this.client) {
+      await this.client.close();
+    }
+  }
+
+  getType(): string {
+    return 'MongoDB';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 4. Embedded Relational SQL Storage Engine (Zero-setup PostgreSQL/MySQL compatible)
 // ---------------------------------------------------------------------------
 class EmbeddedSQLDriver implements IDatabaseClient {
   private dataDir: string;
@@ -320,7 +455,47 @@ export const getDB = (): IDatabaseClient => {
 export const connectDB = async (): Promise<IDatabaseClient> => {
   console.log('[PFIS Database] Initializing Database Abstraction Layer...');
 
-  // 1. Try PostgreSQL if configured
+  // 1. Try MongoDB Atlas if configured
+  const mongoUri = config.mongodbUri || config.databaseUrl;
+  if ((config.databaseType === 'mongodb' || (mongoUri && mongoUri.startsWith('mongodb'))) && config.nodeEnv !== 'test') {
+    try {
+      const { MongoClient } = (await import('mongodb')) as any;
+      const client = new MongoClient(mongoUri, {
+        serverSelectionTimeoutMS: 3000,
+        connectTimeoutMS: 3000,
+      });
+      await client.connect();
+      const db = client.db('pfis');
+      console.log('[PFIS Database] Connected successfully to MongoDB Atlas database cluster!');
+
+      // Automatic Indexing for Scalability & High-Concurrency Performance
+      try {
+        await Promise.allSettled([
+          db.collection('users').createIndex({ email: 1 }, { unique: true }),
+          db.collection('users').createIndex({ role: 1 }),
+          db.collection('patients').createIndex({ userId: 1 }),
+          db.collection('patients').createIndex({ patientCode: 1 }),
+          db.collection('patients').createIndex({ abhaNumber: 1 }),
+          db.collection('friction_profiles').createIndex({ patientId: 1 }),
+          db.collection('care_risks').createIndex({ patientId: 1 }),
+          db.collection('care_journeys').createIndex({ patientId: 1, stage: 1 }),
+          db.collection('requests').createIndex({ patientId: 1, hospitalId: 1 }),
+          db.collection('requests').createIndex({ status: 1 }),
+          db.collection('doctors').createIndex({ userId: 1 }),
+          db.collection('asha_workers').createIndex({ userId: 1 }),
+          db.collection('government_officials').createIndex({ userId: 1 }),
+          db.collection('audit_logs').createIndex({ userId: 1, createdAt: -1 }),
+        ]);
+      } catch {}
+
+      dbClient = new MongoDBDriver(client, db);
+      return dbClient;
+    } catch (err: any) {
+      console.warn(`[PFIS Database Notice] MongoDB Atlas connection bypassed (${err.message}). Falling back down database selection chain.`);
+    }
+  }
+
+  // 2. Try PostgreSQL if configured
   if (config.databaseType === 'postgres' || config.databaseUrl.startsWith('postgres')) {
     try {
       const { Pool } = (await import('pg')) as any;

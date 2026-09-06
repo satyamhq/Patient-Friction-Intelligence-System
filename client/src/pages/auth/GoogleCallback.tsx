@@ -3,6 +3,25 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { OnboardingModal } from './OnboardingModal';
+
+const getRoleDashboard = (role: string) => {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'hospital':
+      return '/hospital/dashboard';
+    case 'doctor':
+      return '/doctor/dashboard';
+    case 'asha':
+      return '/asha/dashboard';
+    case 'government':
+      return '/government/dashboard';
+    case 'patient':
+    default:
+      return '/patient/dashboard';
+  }
+};
 
 export const GoogleCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +31,7 @@ export const GoogleCallback: React.FC = () => {
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const hasCalledRef = React.useRef(false);
 
@@ -22,16 +42,12 @@ export const GoogleCallback: React.FC = () => {
     if (existingToken && existingUser && !searchParams.get('token')) {
       try {
         const parsedUser = JSON.parse(existingUser);
-        if (parsedUser.role === 'admin') {
-          navigate('/admin/dashboard', { replace: true });
-          return;
-        } else if (parsedUser.role === 'hospital') {
-          navigate('/hospital/dashboard', { replace: true });
-          return;
-        } else {
-          navigate('/patient/dashboard', { replace: true });
+        if (parsedUser.needsOnboarding || parsedUser.needs_onboarding) {
+          setShowOnboarding(true);
           return;
         }
+        navigate(getRoleDashboard(parsedUser.role), { replace: true });
+        return;
       } catch {}
     }
 
@@ -43,8 +59,9 @@ export const GoogleCallback: React.FC = () => {
       const token = searchParams.get('token');
       const userParam = searchParams.get('user');
       const code = searchParams.get('code');
-      const rawState = searchParams.get('state') || 'admin';
+      const rawState = searchParams.get('state') || 'patient';
       const errorParam = searchParams.get('error');
+      const needsOnboardingParam = searchParams.get('needsOnboarding') === 'true';
 
       if (errorParam) {
         setStatus('error');
@@ -60,7 +77,6 @@ export const GoogleCallback: React.FC = () => {
             userObj = JSON.parse(decodeURIComponent(userParam));
           }
           if (!userObj) {
-            // Fallback decode payload from JWT
             try {
               const payloadBase64 = token.split('.')[1];
               if (payloadBase64) {
@@ -71,13 +87,16 @@ export const GoogleCallback: React.FC = () => {
 
           setAuthSession(token, userObj || { role: 'patient' });
           setUserProfile(userObj);
-          setStatus('success');
 
+          if (needsOnboardingParam || userObj?.needsOnboarding || userObj?.needs_onboarding) {
+            setShowOnboarding(true);
+            setStatus('success');
+            return;
+          }
+
+          setStatus('success');
           setTimeout(() => {
-            const role = userObj?.role || 'patient';
-            if (role === 'admin') navigate('/admin/dashboard', { replace: true });
-            else if (role === 'hospital') navigate('/hospital/dashboard', { replace: true });
-            else navigate('/patient/dashboard', { replace: true });
+            navigate(getRoleDashboard(userObj?.role || 'patient'), { replace: true });
           }, 600);
           return;
         } catch (err: any) {
@@ -95,33 +114,36 @@ export const GoogleCallback: React.FC = () => {
         return;
       }
 
-      let role = 'admin';
+      let role = 'patient';
       let clientId = '';
       try {
         const parsed = JSON.parse(decodeURIComponent(rawState));
-        role = parsed.role || 'admin';
+        role = parsed.role || 'patient';
         clientId = parsed.clientId || '';
       } catch {
-        role = rawState || 'admin';
+        role = rawState || 'patient';
       }
 
       try {
         const res = await authService.googleCallback(code, role, clientId);
         if (res.success && res.token && res.user) {
           setAuthSession(res.token, res.user, res.profile);
-
           setUserProfile(res.user);
-          setStatus('success');
 
+          if (res.needsOnboarding || res.user.needsOnboarding || res.user.needs_onboarding) {
+            setShowOnboarding(true);
+            setStatus('success');
+            return;
+          }
+
+          setStatus('success');
           setTimeout(() => {
-            if (res.user.role === 'admin') navigate('/admin/dashboard', { replace: true });
-            else if (res.user.role === 'hospital') navigate('/hospital/dashboard', { replace: true });
-            else navigate('/patient/dashboard', { replace: true });
+            navigate(getRoleDashboard(res.user.role), { replace: true });
           }, 600);
         } else {
           const tokenNow = localStorage.getItem('pfis_auth_token') || localStorage.getItem('pfis_token');
           if (tokenNow) {
-            navigate('/admin/dashboard', { replace: true });
+            navigate('/patient/dashboard', { replace: true });
             return;
           }
           setStatus('error');
@@ -218,6 +240,11 @@ export const GoogleCallback: React.FC = () => {
           </div>
         )}
       </div>
+
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onSuccess={(path) => navigate(path, { replace: true })}
+      />
     </div>
   );
 };

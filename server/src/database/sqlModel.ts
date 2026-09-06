@@ -183,6 +183,23 @@ function wrapModelInstance(tableName: string, raw: any): any {
     created_at: 'createdAt',
     updatedat: 'updatedAt',
     updated_at: 'updatedAt',
+    assignedvillage: 'assignedVillage',
+    assignedward: 'assignedWard',
+    primaryhealthcenter: 'primaryHealthCenter',
+    jurisdictionlevel: 'jurisdictionLevel',
+    officialdesignation: 'officialDesignation',
+    officeaddress: 'officeAddress',
+    clearancelevel: 'clearanceLevel',
+    isfieldactive: 'isFieldActive',
+    communitypopulation: 'communityPopulation',
+    assignedpatientscount: 'assignedPatientsCount',
+    activecases: 'activeCases',
+    languagesspoken: 'languagesSpoken',
+    experienceyears: 'experienceYears',
+    registrationnumber: 'registrationNumber',
+    totalpatientsconsulted: 'totalPatientsConsulted',
+    availabledays: 'availableDays',
+    hospitalname: 'hospitalName',
   };
 
   for (const [lowerK, camelK] of Object.entries(keyMap)) {
@@ -212,6 +229,10 @@ function wrapModelInstance(tableName: string, raw: any): any {
     'appointmentTiming',
     'topBarrier',
     'secondaryBarrier',
+    'languagesSpoken',
+    'languagesspoken',
+    'availableDays',
+    'availabledays',
   ];
 
   for (const f of jsonFields) {
@@ -493,6 +514,9 @@ export function createSQLModel<T = any>(tableName: string) {
     }
 
     static async create(data: any): Promise<any> {
+      if (Array.isArray(data)) {
+        return this.insertMany(data);
+      }
       const id = data.id || data._id || crypto.randomUUID();
       const now = new Date().toISOString();
       const raw = {
@@ -511,9 +535,12 @@ export function createSQLModel<T = any>(tableName: string) {
 
     static async insertMany(items: any[]): Promise<any[]> {
       if (!Array.isArray(items) || items.length === 0) return [];
-      const instances = [];
-      for (const item of items) {
-        instances.push(await this.create(item));
+      const chunkSize = 25;
+      const instances: any[] = [];
+      for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        const chunkInstances = await Promise.all(chunk.map((item) => this.create(item)));
+        instances.push(...chunkInstances);
       }
       return instances;
     }

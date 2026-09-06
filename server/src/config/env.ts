@@ -8,7 +8,8 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   databaseType: process.env.DATABASE_TYPE || 'auto', // 'postgres' | 'mysql' | 'auto'
-  databaseUrl: process.env.DATABASE_URL || '',
+  databaseUrl: process.env.DATABASE_URL || process.env.MONGODB_URI || '',
+  mongodbUri: process.env.MONGODB_URI || process.env.DATABASE_URL || '',
   pgHost: process.env.PG_HOST || 'localhost',
   pgPort: parseInt(process.env.PG_PORT || '5432', 10),
   pgUser: process.env.PG_USER || 'postgres',
