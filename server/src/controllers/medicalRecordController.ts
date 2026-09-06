@@ -39,8 +39,16 @@ export class MedicalRecordController {
         followUpRequired,
       } = req.body;
 
-      if (!patientId || !chiefComplaint) {
-        res.status(400).json({ success: false, message: 'patientId and chiefComplaint are required.' });
+      let finalPatientId = patientId;
+      if (!finalPatientId) {
+        const patient = await Patient.findOne({ userId });
+        finalPatientId = patient ? (patient.id || patient._id) : userId;
+      }
+
+      const finalComplaint = chiefComplaint || req.body.diagnosis || req.body.recordType || 'Consultation / Medical Record';
+
+      if (!finalPatientId) {
+        res.status(400).json({ success: false, message: 'patientId is required.' });
         return;
       }
 
@@ -58,14 +66,15 @@ export class MedicalRecordController {
 
       const record = await MedicalRecord.create({
         recordCode: code,
-        patientId,
+        patientId: finalPatientId,
         doctorId,
         appointmentId: appointmentId || null,
         referralId: referralId || null,
         hospitalId: hospitalId || null,
-        visitDate: visitDate || now.split('T')[0],
+        doctorName,
+        visitDate: visitDate || now,
         visitType,
-        chiefComplaint,
+        chiefComplaint: finalComplaint,
         historyOfPresentIllness,
         pastMedicalHistory,
         vitalSigns: vitalSigns || {},

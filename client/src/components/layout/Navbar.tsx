@@ -18,6 +18,9 @@ import {
   LayoutDashboard,
   Cpu,
   CheckCircle2,
+  Stethoscope,
+  Users as UsersIcon,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -56,9 +59,14 @@ export const Navbar: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
-    await logout();
-    setIsMobileMenuOpen(false);
-    navigate('/login');
+    try {
+      await logout();
+    } catch (e) {
+      console.warn('Logout notice:', e);
+    } finally {
+      setIsMobileMenuOpen(false);
+      window.location.href = '/login?logged_out=true';
+    }
   };
 
   const isActive = (path: string) => routerLocation.pathname === path;
@@ -513,9 +521,15 @@ export const Navbar: React.FC = () => {
                         ? '/patient/settings'
                         : user.role === 'hospital'
                         ? '/hospital/settings'
+                        : user.role === 'doctor'
+                        ? '/doctor/profile'
+                        : user.role === 'asha'
+                        ? '/asha/profile'
+                        : user.role === 'government'
+                        ? '/government/dashboard'
                         : '/admin/settings'
                     }
-                    title={t('nav.settings', 'Settings & Language')}
+                    title={t('nav.settings', 'Settings & Preferences')}
                     className="p-1.5 text-slate-500 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition-colors"
                   >
                     <SettingsIcon className="w-4 h-4" />
@@ -527,6 +541,12 @@ export const Navbar: React.FC = () => {
                         ? '/patient/profile'
                         : user.role === 'hospital'
                         ? '/hospital/profile'
+                        : user.role === 'doctor'
+                        ? '/doctor/profile'
+                        : user.role === 'asha'
+                        ? '/asha/profile'
+                        : user.role === 'government'
+                        ? '/government/dashboard'
                         : '/admin/dashboard'
                     }
                     className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-slate-100 text-left transition-colors border border-slate-200/60 bg-slate-50/50"
@@ -536,6 +556,12 @@ export const Navbar: React.FC = () => {
                         <Building2 className="w-3.5 h-3.5 text-white" />
                       ) : user.role === 'admin' ? (
                         <Shield className="w-3.5 h-3.5 text-white" />
+                      ) : user.role === 'doctor' ? (
+                        <Stethoscope className="w-3.5 h-3.5 text-white" />
+                      ) : user.role === 'asha' ? (
+                        <UsersIcon className="w-3.5 h-3.5 text-white" />
+                      ) : user.role === 'government' ? (
+                        <ShieldCheck className="w-3.5 h-3.5 text-white" />
                       ) : (
                         <UserIcon className="w-3.5 h-3.5 text-white" />
                       )}

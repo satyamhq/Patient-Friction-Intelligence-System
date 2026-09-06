@@ -10,6 +10,7 @@ router.use(requireRole('government'));
 
 router.get('/profile', GovernmentController.getProfile);
 router.get('/overview', GovernmentController.getDistrictOverview);
+router.get('/analytics', GovernmentController.getDistrictOverview);
 router.get('/leakage-funnel', GovernmentController.getCareLeakageFunnel);
 router.get('/friction-heatmap', GovernmentController.getFrictionHeatmap);
 router.get('/barriers', GovernmentController.getPopulationBarriers);

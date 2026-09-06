@@ -44,3 +44,26 @@ export const authenticate = async (
     });
   }
 };
+
+export const optionalAuthenticate = async (
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const payload = verifyToken(token);
+      const user = await User.findById(payload.userId);
+      if (user) {
+        req.user = user;
+        req.tokenPayload = payload;
+      }
+    }
+  } catch (error) {
+    // silently continue without setting req.user
+  }
+  next();
+};
+

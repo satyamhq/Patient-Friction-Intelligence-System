@@ -63,9 +63,15 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       await api.post('/auth/logout');
+    } catch {
+      // Ignore network / auth errors during logout
     } finally {
       localStorage.removeItem('pfis_auth_token');
       localStorage.removeItem('pfis_auth_user');
+      localStorage.removeItem('pfis_auth_profile');
+      localStorage.removeItem('pfis_token');
+      localStorage.removeItem('pfis_user');
+      localStorage.removeItem('pfis_profile');
     }
   },
 };

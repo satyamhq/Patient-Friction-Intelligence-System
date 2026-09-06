@@ -13,6 +13,8 @@ router.put('/departments/:deptId', authenticate, requireRole('hospital', 'admin'
 router.delete('/departments/:deptId', authenticate, requireRole('hospital', 'admin'), HospitalController.deleteDepartment);
 
 // Public endpoints (or patient hospital finder)
+router.get('/', HospitalController.getAllHospitals);
+router.get('/departments', HospitalController.getDepartments);
 router.get('/nearby', HospitalController.getNearby);
 router.get('/search', HospitalController.search);
 router.get('/:id', HospitalController.getById);

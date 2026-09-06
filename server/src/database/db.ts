@@ -272,12 +272,18 @@ class EmbeddedSQLDriver implements IDatabaseClient {
     const insertMatch = trimmed.match(/INSERT\s+INTO\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
     if (insertMatch) {
       const tableName = insertMatch[1].toLowerCase();
-      const cols = insertMatch[2].split(',').map((c) => c.trim().toLowerCase());
+      const cols = insertMatch[2].split(',').map((c) => c.trim());
       if (!this.tables[tableName]) this.tables[tableName] = [];
 
       const record: any = {};
       cols.forEach((col, idx) => {
-        record[col] = params[idx] !== undefined ? params[idx] : null;
+        const val = params[idx] !== undefined ? params[idx] : null;
+        record[col] = val;
+        record[col.toLowerCase()] = val;
+        if (col.includes('_')) {
+          const camel = col.replace(/_([a-z0-9])/g, (_, g) => g.toUpperCase());
+          record[camel] = val;
+        }
       });
 
       // Avoid duplicates on primary key
@@ -349,9 +355,15 @@ class EmbeddedSQLDriver implements IDatabaseClient {
         if (this.matchesWhere(row, whereClause, params)) {
           updatedIndices.push(idx);
           setPairs.forEach((pair, pIdx) => {
-            const [c] = pair.split('=').map((s) => s.trim().toLowerCase());
+            const [c] = pair.split('=').map((s) => s.trim());
             if (params[pIdx] !== undefined) {
-              row[c] = params[pIdx];
+              const val = params[pIdx];
+              row[c] = val;
+              row[c.toLowerCase()] = val;
+              if (c.includes('_')) {
+                const camel = c.replace(/_([a-z0-9])/g, (_, g) => g.toUpperCase());
+                row[camel] = val;
+              }
             }
           });
         }
@@ -416,7 +428,15 @@ class EmbeddedSQLDriver implements IDatabaseClient {
       if (rowVal === undefined) {
         if (field === 'id') rowVal = row._id || row.id;
         else if (field === '_id') rowVal = row.id || row._id;
-        else if (field === 'hospitalid' || field === 'hospital_id') rowVal = row.hospitalId || row.hospital_id;
+        else {
+          const lowerField = field.toLowerCase();
+          for (const [k, v] of Object.entries(row)) {
+            if (k.toLowerCase() === lowerField || k.replace(/_/g, '').toLowerCase() === lowerField) {
+              rowVal = v;
+              break;
+            }
+          }
+        }
       }
 
       if (op === '=') {

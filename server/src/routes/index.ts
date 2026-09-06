@@ -39,7 +39,7 @@ router.use('/admin', adminRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/languages', languageRoutes);
 
-// Role-specific portals & 5-Layer PFIS Endpoints
+// Role-specific portals & 5-Layer PFIS Endpoints (support both singular and plural)
 router.use('/referrals', referralRoutes);
 router.use('/triage', triageRoutes);
 router.use('/recall', recallRoutes);
@@ -47,8 +47,11 @@ router.use('/medicines', medicineRoutes);
 router.use('/sync', syncRoutes);
 router.use('/abha', abhaRoutes);
 router.use('/doctor', doctorRoutes);
+router.use('/doctors', doctorRoutes);
 router.use('/asha', ashaRoutes);
+router.use('/ashas', ashaRoutes);
 router.use('/government', governmentRoutes);
+router.use('/governments', governmentRoutes);
 router.use('/appointments', appointmentRoutes);
 router.use('/medical-records', medicalRecordRoutes);
 

@@ -633,4 +633,43 @@ export class HospitalController {
       res.status(500).json({ success: false, message: error.message || 'Failed to delete department.' });
     }
   }
+
+  public static async getAllHospitals(req: Request, res: Response): Promise<void> {
+    try {
+      const hospitals = await Hospital.find({});
+      res.status(200).json({
+        success: true,
+        count: hospitals.length,
+        hospitals,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch hospitals.' });
+    }
+  }
+
+  public static async getDepartments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      let hospitalId = req.query.hospitalId as string;
+      if (!hospitalId && userId) {
+        const hospital = await Hospital.findOne({ userId });
+        if (hospital) {
+          hospitalId = hospital._id || hospital.id;
+        }
+      }
+      let departments: any[] = [];
+      if (hospitalId) {
+        departments = await HospitalDepartment.find({ hospitalId });
+        if (!departments || departments.length === 0) {
+          departments = await ensureHospitalDepartments(hospitalId);
+        }
+      } else {
+        departments = await HospitalDepartment.find({});
+      }
+      res.status(200).json({ success: true, departments });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch departments.' });
+    }
+  }
 }
+

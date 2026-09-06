@@ -196,10 +196,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    setProfile(null);
-    setToken(null);
+    try {
+      await authService.logout();
+    } catch (e) {
+      console.warn('AuthContext logout error:', e);
+    } finally {
+      setUser(null);
+      setProfile(null);
+      setToken(null);
+      localStorage.removeItem('pfis_auth_token');
+      localStorage.removeItem('pfis_auth_user');
+      localStorage.removeItem('pfis_auth_profile');
+      localStorage.removeItem('pfis_token');
+      localStorage.removeItem('pfis_user');
+      localStorage.removeItem('pfis_profile');
+    }
   };
 
   const refreshProfile = async () => {

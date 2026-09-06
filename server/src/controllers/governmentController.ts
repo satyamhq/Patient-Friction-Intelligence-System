@@ -197,6 +197,7 @@ export class GovernmentController {
         success: true,
         district: 'Kapurthala',
         blocks,
+        heatmap: blocks,
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Failed to fetch friction heatmap' });

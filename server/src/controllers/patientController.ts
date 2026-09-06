@@ -566,6 +566,25 @@ export class PatientController {
     }
   }
 
+  public static async addHealthRecord(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+      const record = await MedicalRecord.create({
+        patientId: patient._id || patient.id,
+        ...req.body,
+        visitDate: req.body.visitDate || new Date().toISOString(),
+      });
+      res.status(201).json({ success: true, record });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to add health record.' });
+    }
+  }
+
   // Aliases for route compatibility
   public static getAccessibilityRisk = PatientController.getCareRisk;
   public static getCareJourney = PatientController.getCareJourneys;

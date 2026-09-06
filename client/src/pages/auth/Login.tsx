@@ -21,9 +21,29 @@ import {
   Globe,
   Loader2,
   Zap,
+  Stethoscope,
+  Users as UsersIcon,
 } from 'lucide-react';
 
-type PortalRole = 'patient' | 'hospital' | 'admin';
+export type PortalRole = 'patient' | 'doctor' | 'hospital' | 'asha' | 'government' | 'admin';
+
+export const getRoleDashboard = (role?: string): string => {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'hospital':
+      return '/hospital/dashboard';
+    case 'doctor':
+      return '/doctor/dashboard';
+    case 'asha':
+      return '/asha/dashboard';
+    case 'government':
+      return '/government/dashboard';
+    case 'patient':
+    default:
+      return '/patient/dashboard';
+  }
+};
 
 interface PortalConfig {
   id: PortalRole;
@@ -57,14 +77,26 @@ export const Login: React.FC = () => {
   const { user, isAuthenticated, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to the user's dashboard immediately
+  // If already authenticated, redirect to the user's dashboard immediately (unless user explicitly logged out)
   useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.role === 'admin') navigate('/admin/dashboard', { replace: true });
-      else if (user.role === 'hospital') navigate('/hospital/dashboard', { replace: true });
-      else navigate('/patient/dashboard', { replace: true });
+    const isExplicitLogout =
+      searchParams.get('logged_out') === 'true' || searchParams.get('session_expired') === 'true';
+
+    if (isExplicitLogout) {
+      // Ensure all residual storage is cleared
+      localStorage.removeItem('pfis_auth_token');
+      localStorage.removeItem('pfis_auth_user');
+      localStorage.removeItem('pfis_auth_profile');
+      localStorage.removeItem('pfis_token');
+      localStorage.removeItem('pfis_user');
+      localStorage.removeItem('pfis_profile');
+      return;
     }
-  }, [isAuthenticated, user, navigate]);
+
+    if (isAuthenticated && user) {
+      navigate(getRoleDashboard(user.role), { replace: true });
+    }
+  }, [isAuthenticated, user, navigate, searchParams]);
 
   // Set default fields whenever portal switches
   useEffect(() => {
@@ -74,6 +106,15 @@ export const Login: React.FC = () => {
     } else if (activePortal === 'hospital') {
       setEmail('hospital@apollo.org');
       setPassword('Hospital@123');
+    } else if (activePortal === 'doctor') {
+      setEmail('doctor@pfis.org');
+      setPassword('Doctor@123');
+    } else if (activePortal === 'asha') {
+      setEmail('asha@pfis.org');
+      setPassword('Asha@123');
+    } else if (activePortal === 'government') {
+      setEmail('official@punjab.gov.in');
+      setPassword('Gov@123');
     } else {
       setEmail('patient@pfis.org');
       setPassword('Patient@123');
@@ -102,10 +143,8 @@ export const Login: React.FC = () => {
                 if (res.success) {
                   setRedirectingMessage('Authenticated! Redirecting to Dashboard...');
                   setTimeout(() => {
-                    if (res.user.role === 'admin') navigate('/admin/dashboard', { replace: true });
-                    else if (res.user.role === 'hospital') navigate('/hospital/dashboard', { replace: true });
-                    else navigate('/patient/dashboard', { replace: true });
-                  }, 200);
+                    navigate(getRoleDashboard(res.user?.role), { replace: true });
+                  }, 150);
                 }
               } catch (err: any) {
                 setRedirectingMessage(null);
@@ -125,42 +164,10 @@ export const Login: React.FC = () => {
 
   const portals: PortalConfig[] = [
     {
-      id: 'admin',
-      title: t('auth.adminPortalTitle', 'Health Ministry & Administration'),
-      subtitle: t('auth.adminPortalSubtitle', 'Statewide population health intelligence, policy simulation & audit'),
-      badge: t('auth.adminBadge', 'Security Level 1'),
-      badgeColor: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300',
-      icon: <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
-      defaultEmail: 'admin@pfis.org',
-      defaultPass: 'Admin@123',
-      accentBorder: 'border-purple-500 ring-purple-500/20',
-      features: [
-        'Population Friction Heatmaps & Geo-Analytics',
-        'What-If Policy & Intervention Simulator',
-        'Live Logged In Users Feed & Security Audit Stream',
-      ],
-    },
-    {
-      id: 'hospital',
-      title: t('auth.hospitalPortalTitle', 'Hospital & Clinical Facility'),
-      subtitle: t('auth.hospitalPortalSubtitle', 'Triage desk, patient intake review, & OPD capacity management'),
-      badge: t('auth.hospitalBadge', 'Clinical Desk'),
-      badgeColor: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300',
-      icon: <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-      defaultEmail: 'hospital@apollo.org',
-      defaultPass: 'Hospital@123',
-      accentBorder: 'border-blue-500 ring-blue-500/20',
-      features: [
-        'Live Patient Triage & Risk Prioritization',
-        'Daily Department Token Allocation',
-        'Non-Clinical Barrier Accommodation Support',
-      ],
-    },
-    {
       id: 'patient',
-      title: t('auth.patientPortalTitle', 'Patient & Citizen Portal'),
-      subtitle: t('auth.patientPortalSubtitle', 'Non-clinical barrier check, nearby hospitals, & OPD token request'),
-      badge: t('auth.patientBadge', 'Citizen Access'),
+      title: t('auth.patientPortalTitle', 'Patient & Citizen'),
+      subtitle: t('auth.patientPortalSubtitle', 'Barrier check, nearby hospital locator & OPD appointments'),
+      badge: t('auth.patientBadge', 'Citizen'),
       badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300',
       icon: <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
       defaultEmail: 'patient@pfis.org',
@@ -168,8 +175,88 @@ export const Login: React.FC = () => {
       accentBorder: 'border-emerald-500 ring-emerald-500/20',
       features: [
         'Personal Friction Fingerprint',
-        'Nearby Hospital Locator & Travel Estimation',
-        'OPD Token Request & Teleconsultation',
+        'Hospital Locator & OPD Tokens',
+        'Live Teleconsultation',
+      ],
+    },
+    {
+      id: 'doctor',
+      title: 'Doctor / Physician',
+      subtitle: 'Clinical OPD consultation queue, Rx desk & health records',
+      badge: 'Physician',
+      badgeColor: 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950 dark:text-teal-300',
+      icon: <Stethoscope className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      defaultEmail: 'doctor@pfis.org',
+      defaultPass: 'Doctor@123',
+      accentBorder: 'border-teal-500 ring-teal-500/20',
+      features: [
+        'Live OPD Token Calling & Queue',
+        'Clinical Notes & ICD Diagnoses',
+        'Longitudinal Health History',
+      ],
+    },
+    {
+      id: 'hospital',
+      title: t('auth.hospitalPortalTitle', 'Hospital Facility'),
+      subtitle: t('auth.hospitalPortalSubtitle', 'Operations flow, pharmacy inventory & referral triage'),
+      badge: t('auth.hospitalBadge', 'Facility'),
+      badgeColor: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300',
+      icon: <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+      defaultEmail: 'hospital@apollo.org',
+      defaultPass: 'Hospital@123',
+      accentBorder: 'border-blue-500 ring-blue-500/20',
+      features: [
+        'Patient Flow & Queue Tracking',
+        'Pharmacy Formulary Management',
+        'Inter-Facility Referrals',
+      ],
+    },
+    {
+      id: 'asha',
+      title: 'ASHA Field Worker',
+      subtitle: 'Household health visits, maternal rounds & barrier intake',
+      badge: 'Community',
+      badgeColor: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300',
+      icon: <UsersIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
+      defaultEmail: 'asha@pfis.org',
+      defaultPass: 'Asha@123',
+      accentBorder: 'border-amber-500 ring-amber-500/20',
+      features: [
+        'Household Health Visits',
+        'ANC/PNC & Immunization Sync',
+        'Grassroots Patient Triage',
+      ],
+    },
+    {
+      id: 'government',
+      title: 'District Governance',
+      subtitle: 'Public health metrics, facility performance & care leakage',
+      badge: 'Governance',
+      badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-300',
+      icon: <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+      defaultEmail: 'official@punjab.gov.in',
+      defaultPass: 'Gov@123',
+      accentBorder: 'border-indigo-500 ring-indigo-500/20',
+      features: [
+        'Geospatial Friction Heatmap',
+        'Facility Performance Ledger',
+        'Care Leakage Diagnostics',
+      ],
+    },
+    {
+      id: 'admin',
+      title: t('auth.adminPortalTitle', 'Statewide Admin'),
+      subtitle: t('auth.adminPortalSubtitle', 'User & role control, verification queue & system health'),
+      badge: t('auth.adminBadge', 'Security L1'),
+      badgeColor: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300',
+      icon: <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
+      defaultEmail: 'dhirajkumar464748@gmail.com',
+      defaultPass: 'Admin@123',
+      accentBorder: 'border-purple-500 ring-purple-500/20',
+      features: [
+        'User Management & Roles',
+        'Healthcare Verification Queue',
+        'System Telemetry & Monitoring',
       ],
     },
   ];
@@ -186,17 +273,15 @@ export const Login: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
-    setRedirectingMessage(`Authenticating ${roleEmail} in MongoDB...`);
+    setRedirectingMessage(`Authenticating ${roleEmail} in PFIS...`);
 
     try {
       const res = await login(roleEmail, rolePass);
       if (res.success) {
-        setRedirectingMessage(`Welcome back! Redirecting to ${role} dashboard...`);
+        setRedirectingMessage(`Welcome back! Redirecting to dashboard...`);
         setTimeout(() => {
-          if (res.user.role === 'admin') navigate('/admin/dashboard', { replace: true });
-          else if (res.user.role === 'hospital') navigate('/hospital/dashboard', { replace: true });
-          else navigate('/patient/dashboard', { replace: true });
-        }, 200);
+          navigate(getRoleDashboard(res.user?.role || role), { replace: true });
+        }, 150);
       }
     } catch (err: any) {
       setRedirectingMessage(null);
@@ -283,8 +368,8 @@ export const Login: React.FC = () => {
         </p>
       </div>
 
-      {/* 3 Dedicated Portal Selection Cards with 1-Click Entry */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      {/* 6 Dedicated Portal Selection Cards with 1-Click Entry */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
         {portals.map((portal) => {
           const isSelected = activePortal === portal.id;
           return (

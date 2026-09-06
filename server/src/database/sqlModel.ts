@@ -347,22 +347,25 @@ function wrapModelInstance(tableName: string, raw: any): any {
     const now = new Date().toISOString();
     this.updated_at = now;
     this.updatedAt = now;
+    this.id = this.id || this._id;
+    this._id = this._id || this.id;
+    const recordId = this.id;
 
     // Check if exists
-    const checkRes = await db.query(`SELECT * FROM ${tableName} WHERE id = $1 LIMIT 1`, [this.id]);
+    const checkRes = await db.query(`SELECT * FROM ${tableName} WHERE id = $1 LIMIT 1`, [recordId]);
     if (checkRes.rows && checkRes.rows.length > 0) {
       // Update
       const keys = Object.keys(this).filter(
-        (k) => !['id', '_id', 'save', 'toObject', 'toJSON'].includes(k) && typeof this[k] !== 'function'
+        (k) => !['id', '_id', 'save', 'toObject', 'toJSON'].includes(k) && !k.startsWith('$') && typeof this[k] !== 'function'
       );
       const setClauses = keys.map((k, idx) => `${k} = $${idx + 1}`).join(', ');
       const params = keys.map((k) => (typeof this[k] === 'object' && this[k] !== null ? JSON.stringify(this[k]) : this[k]));
-      params.push(this.id);
+      params.push(recordId);
       await db.query(`UPDATE ${tableName} SET ${setClauses} WHERE id = $${params.length}`, params);
     } else {
       // Insert
       const keys = Object.keys(this).filter(
-        (k) => !['save', 'toObject', 'toJSON'].includes(k) && typeof this[k] !== 'function'
+        (k) => !['save', 'toObject', 'toJSON'].includes(k) && !k.startsWith('$') && typeof this[k] !== 'function'
       );
       const colNames = keys.join(', ');
       const placeholders = keys.map((_, idx) => `$${idx + 1}`).join(', ');
@@ -393,6 +396,8 @@ function matchFilter(row: any, filter: any): boolean {
   if (!filter || Object.keys(filter).length === 0) return true;
 
   for (const [key, val] of Object.entries(filter)) {
+    if (val === undefined) continue;
+
     if (key === '$or' && Array.isArray(val)) {
       const matchesAny = val.some((subFilter) => matchFilter(row, subFilter));
       if (!matchesAny) return false;
@@ -414,6 +419,12 @@ function matchFilter(row: any, filter: any): boolean {
       else if (row[snake] !== undefined) rowVal = row[snake];
       else if (key === '_id') rowVal = row.id;
       else if (key === 'id') rowVal = row._id;
+    }
+
+    // Null matching
+    if (val === null) {
+      if (rowVal !== null && rowVal !== undefined && rowVal !== '') return false;
+      continue;
     }
 
     // Boolean equality matching (supporting 1, 0, '1', '0', 'true', 'false', true, false)
@@ -456,7 +467,9 @@ function matchFilter(row: any, filter: any): boolean {
     }
 
     // Direct equality
-    if (String(rowVal).toLowerCase() !== String(val).toLowerCase()) {
+    if (rowVal === null || rowVal === undefined) {
+      if (val !== null && val !== undefined) return false;
+    } else if (String(rowVal).toLowerCase() !== String(val).toLowerCase()) {
       return false;
     }
   }
@@ -564,20 +577,88 @@ export function createSQLModel<T = any>(tableName: string) {
     static async updateOne(filter: any, update: any): Promise<{ modifiedCount: number }> {
       const item = await this.findOne(filter);
       if (!item) return { modifiedCount: 0 };
-      const patch = update.$set || update;
-      Object.assign(item, patch);
-      await item.save();
+      if (update.$inc) {
+        for (const [k, v] of Object.entries(update.$inc)) {
+          item[k] = (Number(item[k]) || 0) + Number(v);
+        }
+      }
+      const patch = update.$set || (update.$inc ? {} : update);
+      for (const [k, v] of Object.entries(patch)) {
+        if (!k.startsWith('$')) {
+          item[k] = v;
+        }
+      }
+      if (item.save) {
+        await item.save();
+      }
       return { modifiedCount: 1 };
     }
 
     static async updateMany(filter: any, update: any): Promise<{ modifiedCount: number }> {
       const items = await this.find(filter);
-      const patch = update.$set || update;
       for (const item of items) {
-        Object.assign(item, patch);
-        await item.save();
+        if (update.$inc) {
+          for (const [k, v] of Object.entries(update.$inc)) {
+            item[k] = (Number(item[k]) || 0) + Number(v);
+          }
+        }
+        const patch = update.$set || (update.$inc ? {} : update);
+        for (const [k, v] of Object.entries(patch)) {
+          if (!k.startsWith('$')) {
+            item[k] = v;
+          }
+        }
+        if (item.save) {
+          await item.save();
+        }
       }
       return { modifiedCount: items.length };
+    }
+
+    static async findByIdAndUpdate(id: string, update: any, _options: any = {}): Promise<any> {
+      const item = await this.findById(id);
+      if (!item) return null;
+      if (update.$inc) {
+        for (const [k, v] of Object.entries(update.$inc)) {
+          item[k] = (Number(item[k]) || 0) + Number(v);
+        }
+      }
+      const patch = update.$set || (update.$inc ? {} : update);
+      for (const [k, v] of Object.entries(patch)) {
+        if (!k.startsWith('$')) {
+          item[k] = v;
+        }
+      }
+      if (item.save) {
+        await item.save();
+      }
+      return item;
+    }
+
+    static async findOneAndUpdate(filter: any, update: any, options: any = {}): Promise<any> {
+      const item = await this.findOne(filter);
+      if (!item) {
+        if (options && options.upsert) {
+          const patch = update.$set || update;
+          return this.create({ ...filter, ...patch });
+        }
+        return null;
+      }
+      if (update.$inc) {
+        for (const [k, v] of Object.entries(update.$inc)) {
+          item[k] = (Number(item[k]) || 0) + Number(v);
+        }
+      }
+      const patch = update.$set || (update.$inc ? {} : update);
+      for (const [k, v] of Object.entries(patch)) {
+        if (!k.startsWith('$')) {
+          item[k] = v;
+        }
+      }
+      if (item.save) {
+        await item.save();
+      }
+      return item;
     }
 
     static async deleteOne(filter: any): Promise<{ deletedCount: number }> {

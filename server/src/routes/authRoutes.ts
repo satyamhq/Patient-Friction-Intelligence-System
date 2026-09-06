@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/authController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+import { authenticate, optionalAuthenticate } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -19,6 +19,6 @@ router.get('/me', authenticate, AuthController.getMe);
 router.post('/complete-onboarding', authenticate, AuthController.completeOnboarding);
 router.post('/onboarding', authenticate, AuthController.completeOnboarding);
 router.post('/onboard', authenticate, AuthController.completeOnboarding);
-router.post('/logout', authenticate, AuthController.logout);
+router.post('/logout', optionalAuthenticate, AuthController.logout);
 
 export default router;
