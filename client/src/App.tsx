@@ -79,6 +79,7 @@ const DoctorPatientReview = lazyPage(() => import('./pages/doctor/DoctorPatientR
 const AshaDashboard = lazyPage(() => import('./pages/asha/AshaDashboard'), 'AshaDashboard');
 const AshaTriageWizard = lazyPage(() => import('./pages/asha/AshaTriageWizard'), 'AshaTriageWizard');
 const AshaBarrierEntry = lazyPage(() => import('./pages/asha/AshaBarrierEntry'), 'AshaBarrierEntry');
+const AshaProfile = lazyPage(() => import('./pages/asha/AshaProfile'), 'AshaProfile');
 
 // Government Pages (Lazy Loaded)
 const GovernmentDashboard = lazyPage(() => import('./pages/government/GovernmentDashboard'), 'GovernmentDashboard');
@@ -175,6 +176,7 @@ export const App: React.FC = () => {
                         <Route path="wizard" element={<AshaTriageWizard />} />
                         <Route path="barriers" element={<AshaBarrierEntry />} />
                         <Route path="recalls" element={<AshaDashboard />} />
+                        <Route path="profile" element={<AshaProfile />} />
                       </Route>
 
                       {/* PHC & District Doctor Desk */}

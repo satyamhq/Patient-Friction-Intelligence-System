@@ -9,6 +9,7 @@ router.use(authenticate);
 router.use(requireRole('asha'));
 
 router.get('/profile', AshaController.getProfile);
+router.put('/profile', AshaController.updateProfile);
 router.get('/patients', AshaController.getAssignedPatients);
 router.post('/patient', AshaController.registerPatient);
 router.post('/barriers', AshaController.recordBarriers);

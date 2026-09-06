@@ -74,20 +74,24 @@ export const Contact: React.FC = () => {
         </div>
 
         <div className="space-y-4 text-xs text-slate-600">
-          <div className="p-6 bg-slate-900 text-white rounded-3xl space-y-4">
-            <h4 className="font-bold text-sm text-teal-300">National Health Coordination Center</h4>
-            <div className="space-y-2 text-slate-300">
+          <div className="p-6 bg-teal-50/80 text-slate-900 rounded-3xl space-y-4 border border-teal-200/80 shadow-xs">
+            <h4 className="font-bold text-sm text-teal-950">National Health Coordination Center</h4>
+            <div className="space-y-2 text-slate-700 font-medium">
               <p className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal-400" />
+                <Building2 className="w-4 h-4 text-teal-600" />
                 <span>National Healthcare Accessibility Initiative</span>
               </p>
               <p className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-teal-400" />
+                <MapPin className="w-4 h-4 text-teal-600" />
                 <span>Ranchi Medical Enclave, Bariatu, Jharkhand</span>
               </p>
               <p className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-teal-400" />
+                <Mail className="w-4 h-4 text-teal-600" />
                 <span>integration@pfis.org</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-teal-600" />
+                <span>1800-11-7347 (Toll-Free Helpline)</span>
               </p>
             </div>
           </div>

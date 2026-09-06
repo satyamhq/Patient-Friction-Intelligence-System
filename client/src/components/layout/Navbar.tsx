@@ -188,6 +188,147 @@ export const Navbar: React.FC = () => {
               </>
             )}
 
+            {/* DOCTOR NAV */}
+            {user?.role === 'doctor' && (
+              <>
+                <Link
+                  to="/doctor/dashboard"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/doctor/dashboard')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Consultation Desk
+                </Link>
+                <Link
+                  to="/doctor/queue"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/doctor/queue')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  OPD Queue
+                </Link>
+                <Link
+                  to="/doctor/patient-review"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/doctor/patient-review')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Patient Review
+                </Link>
+                <Link
+                  to="/hospital/referrals"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/hospital/referrals')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Referrals
+                </Link>
+              </>
+            )}
+
+            {/* ASHA WORKER NAV */}
+            {user?.role === 'asha' && (
+              <>
+                <Link
+                  to="/asha/dashboard"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/asha/dashboard')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Field Dashboard
+                </Link>
+                <Link
+                  to="/asha/wizard"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                    isActive('/asha/wizard')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Triage & Register</span>
+                </Link>
+                <Link
+                  to="/asha/barriers"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/asha/barriers')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Record Barriers
+                </Link>
+                <Link
+                  to="/asha/profile"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                    isActive('/asha/profile')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-teal-600" />
+                  <span>ASHA Profile</span>
+                </Link>
+              </>
+            )}
+
+            {/* GOVERNMENT OFFICIAL NAV */}
+            {user?.role === 'government' && (
+              <>
+                <Link
+                  to="/government/dashboard"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/government/dashboard')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  District Overview
+                </Link>
+                <Link
+                  to="/government/friction-map"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/government/friction-map')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Friction Heatmap
+                </Link>
+                <Link
+                  to="/admin/simulator"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                    isActive('/admin/simulator')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <Cpu className="w-3.5 h-3.5 text-teal-600" />
+                  <span>What-If Simulator</span>
+                </Link>
+                <Link
+                  to="/admin/interventions"
+                  className={`px-3 py-1.5 rounded-xl transition-all ${
+                    isActive('/admin/interventions')
+                      ? 'bg-teal-50 text-teal-700 font-bold border border-teal-200'
+                      : 'hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  Policy Optimizer
+                </Link>
+              </>
+            )}
+
             {/* ADMIN NAV */}
             {user?.role === 'admin' && (
               <>

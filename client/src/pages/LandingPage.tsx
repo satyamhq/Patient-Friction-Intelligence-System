@@ -140,59 +140,92 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* 1-Click Instant Demo Launcher Bar */}
-            <div className="pt-6 sm:pt-8 max-w-2xl mx-auto w-full">
-              <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-800 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs border-b border-slate-800 pb-2.5 gap-1 text-left">
-                  <span className="font-bold text-teal-400 flex items-center gap-1.5">
-                    <Activity className="w-4 h-4 shrink-0" />{' '}
-                    {t('landing.quickDemoTitle', 'Instant Demo Role Access (1-Click Login):')}
+            <div className="pt-6 sm:pt-8 max-w-4xl mx-auto w-full">
+              <div className="p-5 sm:p-6 bg-white text-slate-900 rounded-3xl shadow-xs border border-slate-200/80 space-y-4 text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs border-b border-slate-100 pb-3 gap-1">
+                  <span className="font-bold text-teal-800 flex items-center gap-2 text-sm">
+                    <Activity className="w-4 h-4 text-teal-600 shrink-0" />{' '}
+                    <span>1-Click Instant Role Portals (MongoDB Atlas Live):</span>
                   </span>
-                  <span className="text-[10px] text-slate-400">Pre-seeded realistic profiles</span>
+                  <span className="text-[11px] font-semibold text-slate-500">6 Preloaded Personas • Zero Typing Required</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                   <button
                     onClick={() =>
                       handleQuickDemoLogin('patient@pfis.org', 'Patient@123', '/patient/dashboard')
                     }
-                    className="w-full p-3 bg-slate-800 hover:bg-teal-900/80 active:bg-teal-950 rounded-xl text-left border border-slate-700 hover:border-teal-500 transition-all min-h-[52px] flex flex-col justify-center group"
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs sm:text-sm">
-                        {t('landing.patientView', 'Patient View')}
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-teal-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      <span className="font-bold text-slate-900 text-xs">Patient</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <p className="text-[11px] text-slate-400 truncate mt-0.5">Sunita Devi (Ramgarh)</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">Sunita Devi</p>
                   </button>
 
                   <button
                     onClick={() =>
-                      handleQuickDemoLogin('hospital@apollo.org', 'Hospital@123', '/hospital/dashboard')
+                      handleQuickDemoLogin('doctor@pfis.org', 'Doctor@123', '/doctor/dashboard')
                     }
-                    className="w-full p-3 bg-slate-800 hover:bg-teal-900/80 active:bg-teal-950 rounded-xl text-left border border-slate-700 hover:border-teal-500 transition-all min-h-[52px] flex flex-col justify-center group"
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs sm:text-sm">
-                        {t('landing.hospitalView', 'Hospital View')}
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-teal-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      <span className="font-bold text-slate-900 text-xs">Doctor</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <p className="text-[11px] text-slate-400 truncate mt-0.5">Apollo Super Speciality</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">Dr. Alok Verma</p>
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleQuickDemoLogin('asha@pfis.org', 'Asha@123', '/asha/dashboard')
+                    }
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-xs">ASHA Worker</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </div>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">Anita Devi</p>
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleQuickDemoLogin('government@pfis.org', 'Gov@123', '/government/dashboard')
+                    }
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-xs">Government</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </div>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">District Officer</p>
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleQuickDemoLogin('hospital@pfis.org', 'Hospital@123', '/hospital/dashboard')
+                    }
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-xs">Hospital</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </div>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">Referral Desk</p>
                   </button>
 
                   <button
                     onClick={() =>
                       handleQuickDemoLogin('admin@pfis.org', 'Admin@123', '/admin/dashboard')
                     }
-                    className="w-full p-3 bg-slate-800 hover:bg-teal-900/80 active:bg-teal-950 rounded-xl text-left border border-slate-700 hover:border-teal-500 transition-all min-h-[52px] flex flex-col justify-center group sm:col-span-2 lg:col-span-1"
+                    className="p-3 bg-slate-50 hover:bg-teal-50/80 rounded-2xl text-left border border-slate-200/80 hover:border-teal-300 transition-all flex flex-col justify-between group shadow-2xs"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs sm:text-sm">
-                        {t('landing.adminSuite', 'Admin Suite')}
-                      </span>
-                      <ArrowRight className="w-3.5 h-3.5 text-teal-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                      <span className="font-bold text-slate-900 text-xs">Admin</span>
+                      <ArrowRight className="w-3 h-3 text-teal-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <p className="text-[11px] text-slate-400 truncate mt-0.5">Simulators & Heatmaps</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-1">Full Oversight</p>
                   </button>
                 </div>
               </div>
@@ -462,19 +495,19 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 5. WHAT-IF SIMULATOR & INTERVENTION OPTIMIZER SHOWCASE */}
-      <section className="bg-slate-900 text-white py-10 sm:py-16 rounded-2xl sm:rounded-3xl max-w-7xl mx-3 sm:mx-6 lg:mx-auto px-5 sm:px-10 lg:px-12 shadow-2xl border border-slate-800 space-y-8 sm:space-y-10">
+      <section className="bg-gradient-to-br from-teal-50/80 via-white to-emerald-50/60 text-slate-900 py-10 sm:py-16 rounded-2xl sm:rounded-3xl max-w-7xl mx-3 sm:mx-6 lg:mx-auto px-5 sm:px-10 lg:px-12 shadow-xs border border-teal-200/80 space-y-8 sm:space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
           <div className="space-y-5 sm:space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-950 text-teal-300 text-xs font-bold border border-teal-800">
-              <Cpu className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold border border-teal-200">
+              <Cpu className="w-3.5 h-3.5 text-teal-700 shrink-0" />
               <span>Operational Simulation Engine</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
               {t('landing.simulatorTitle', 'Simulate high-impact community interventions with precision.')}
             </h2>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {t(
                 'landing.simulatorDesc',
                 'Model the exact care completion improvement when community transport, satellite diagnostic camps, or ASHA escorts are deployed.'
@@ -488,7 +521,7 @@ export const LandingPage: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/admin/interventions" className="w-full sm:w-auto">
-                <Button variant="outline" size="md" className="w-full sm:w-auto min-h-[44px] text-slate-900 bg-white hover:bg-slate-100">
+                <Button variant="outline" size="md" className="w-full sm:w-auto min-h-[44px] text-slate-800 bg-white hover:bg-slate-50 border-slate-300">
                   {t('nav.budgetOptimizer', 'Try Budget Optimizer (₹10 Lakhs)')}
                 </Button>
               </Link>
@@ -496,37 +529,37 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Simulation Preview Card */}
-          <div className="bg-slate-800/90 rounded-2xl p-4 sm:p-6 border border-slate-700 space-y-4 sm:space-y-5">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-3 text-xs gap-1">
-              <span className="font-bold text-teal-400">Simulation Scenario: Multi-Tier Support</span>
-              <span className="text-[10px] text-slate-400">Cohort: 1,000 Patients</span>
+          <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 sm:space-y-5 text-slate-900">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 text-xs gap-1">
+              <span className="font-bold text-teal-800">Simulation Scenario: Multi-Tier Support</span>
+              <span className="text-[10px] text-slate-500">Cohort: 1,000 Patients</span>
             </div>
 
             <div className="space-y-2.5 sm:space-y-3">
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/80 border border-slate-700 text-xs">
-                <span>1. Baseline Completion Rate:</span>
-                <span className="font-bold text-rose-400">37%</span>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                <span className="text-slate-600 font-medium">1. Baseline Completion Rate:</span>
+                <span className="font-bold text-rose-600">37%</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/80 border border-teal-900 text-xs">
-                <span className="text-teal-300">+ Community Health Shuttle:</span>
-                <span className="font-bold text-teal-400">37% → 62% (+25%)</span>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-teal-50/50 border border-teal-200/70 text-xs">
+                <span className="text-teal-900 font-semibold">+ Community Health Shuttle:</span>
+                <span className="font-bold text-teal-700">37% → 62% (+25%)</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/80 border border-teal-900 text-xs">
-                <span className="text-teal-300">+ Satellite Diagnostic Camp:</span>
-                <span className="font-bold text-teal-400">62% → 79% (+17%)</span>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-teal-50/50 border border-teal-200/70 text-xs">
+                <span className="text-teal-900 font-semibold">+ Satellite Diagnostic Camp:</span>
+                <span className="font-bold text-teal-700">62% → 79% (+17%)</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/80 border border-teal-900 text-xs">
-                <span className="text-teal-300">+ ASHA Health Escort:</span>
-                <span className="font-bold text-teal-400">79% → 89% (+10%)</span>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-teal-50/50 border border-teal-200/70 text-xs">
+                <span className="text-teal-900 font-semibold">+ ASHA Health Escort:</span>
+                <span className="font-bold text-teal-700">79% → 89% (+10%)</span>
               </div>
             </div>
 
-            <div className="p-3 bg-teal-950/60 border border-teal-800 rounded-xl text-xs flex justify-between items-center">
-              <span className="text-slate-300 font-medium">Estimated Patients Saved:</span>
-              <span className="font-black text-teal-300 text-sm">~520 Patients Helped</span>
+            <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs flex justify-between items-center">
+              <span className="text-teal-900 font-medium">Estimated Patients Saved:</span>
+              <span className="font-black text-teal-700 text-sm">~520 Patients Helped</span>
             </div>
           </div>
         </div>

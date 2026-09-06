@@ -64,6 +64,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Triage & Register Wizard', path: '/asha/wizard', icon: Sparkles },
     { name: 'Record Barriers', path: '/asha/barriers', icon: ShieldAlert },
     { name: 'High-Risk Recalls (ANC/UIP)', path: '/asha/recalls', icon: ListOrdered },
+    { name: 'ASHA Worker Profile', path: '/asha/profile', icon: User },
   ];
 
   const governmentLinks = [

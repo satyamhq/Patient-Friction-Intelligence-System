@@ -40,6 +40,11 @@ export const ashaService = {
     return res.data;
   },
 
+  updateProfile: async (profileData: Partial<AshaProfile>): Promise<{ worker: AshaProfile }> => {
+    const res = await api.put('/asha/profile', profileData);
+    return res.data;
+  },
+
   getPatients: async (): Promise<{ patients: AssignedPatient[]; count: number }> => {
     const res = await api.get('/asha/patients');
     return res.data;

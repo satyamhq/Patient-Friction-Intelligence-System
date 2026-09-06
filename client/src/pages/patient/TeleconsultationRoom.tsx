@@ -167,11 +167,11 @@ export const TeleconsultationRoom: React.FC = () => {
           </div>
 
           {/* Call Controls Bar */}
-          <div className="bg-slate-900 rounded-2xl p-3 flex items-center justify-center gap-3 border border-slate-800">
+          <div className="bg-white rounded-2xl p-3 flex items-center justify-center gap-3 border border-slate-200/80 shadow-xs">
             <button
               onClick={() => setIsMicOn(!isMicOn)}
-              className={`p-3 rounded-full text-white transition-colors ${
-                isMicOn ? 'bg-slate-700 hover:bg-slate-600' : 'bg-red-600'
+              className={`p-3 rounded-full transition-colors ${
+                isMicOn ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-red-600 text-white'
               }`}
               title={isMicOn ? 'Mute Mic' : 'Unmute Mic'}
             >

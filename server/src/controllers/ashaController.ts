@@ -42,6 +42,38 @@ export class AshaController {
     }
   }
 
+  public static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      let worker = await AshaWorker.findOne({ userId });
+      if (!worker) {
+        worker = await AshaWorker.create({
+          userId,
+          workerId: req.body.workerId || `ASHA-PB-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: req.body.name || req.user?.name || 'Anita Devi',
+          email: req.user?.email || 'asha@pfis.org',
+          phone: req.body.phone || '9876501234',
+          assignedVillage: req.body.assignedVillage || 'Hesal Village',
+          assignedWard: req.body.assignedWard || 'Ward 3',
+          district: req.body.district || 'Ranchi',
+          state: req.body.state || 'Jharkhand',
+          primaryHealthCenter: req.body.primaryHealthCenter || 'Angara PHC',
+          communityPopulation: Number(req.body.communityPopulation) || 1200,
+          assignedPatientsCount: Number(req.body.assignedPatientsCount) || 150,
+          activeCases: Number(req.body.activeCases) || 18,
+          languagesSpoken: Array.isArray(req.body.languagesSpoken) ? req.body.languagesSpoken : ['Hindi', 'Santali'],
+          isFieldActive: req.body.isFieldActive !== false,
+        });
+      } else {
+        await AshaWorker.updateOne({ userId }, { $set: req.body });
+        worker = await AshaWorker.findOne({ userId });
+      }
+      res.status(200).json({ success: true, worker });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to update ASHA profile' });
+    }
+  }
+
   public static async getAssignedPatients(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const patients = await Patient.find({}).limit(50);
