@@ -34,7 +34,7 @@ const lazyPage = (importFn: () => Promise<any>, exportName: string): React.Compo
     })
   ) as any;
 
-// Public Pages (Lazy Loaded)
+// Public Pages
 const LandingPage = lazyPage(() => import('./pages/LandingPage'), 'LandingPage');
 const Login = lazyPage(() => import('./pages/auth/Login'), 'Login');
 const Register = lazyPage(() => import('./pages/auth/Register'), 'Register');
@@ -47,11 +47,13 @@ const Contact = lazyPage(() => import('./pages/public/Contact'), 'Contact');
 const NotFound = lazyPage(() => import('./pages/public/NotFound'), 'NotFound');
 const SystemArchitecture = lazyPage(() => import('./pages/public/SystemArchitecture'), 'SystemArchitecture');
 
-// Patient Pages (Lazy Loaded)
+// Patient Pages
 const PatientDashboard = lazyPage(() => import('./pages/patient/PatientDashboard'), 'PatientDashboard');
 const PatientProfile = lazyPage(() => import('./pages/patient/PatientProfile'), 'PatientProfile');
 const NearbyHospitals = lazyPage(() => import('./pages/patient/NearbyHospitals'), 'NearbyHospitals');
 const HospitalDetails = lazyPage(() => import('./pages/patient/HospitalDetails'), 'HospitalDetails');
+const PatientAppointments = lazyPage(() => import('./pages/patient/PatientAppointments'), 'PatientAppointments');
+const MedicalHistory = lazyPage(() => import('./pages/patient/MedicalHistory'), 'MedicalHistory');
 const PatientRequests = lazyPage(() => import('./pages/patient/PatientRequests'), 'PatientRequests');
 const RequestDetails = lazyPage(() => import('./pages/patient/RequestDetails'), 'RequestDetails');
 const PatientDocuments = lazyPage(() => import('./pages/patient/PatientDocuments'), 'PatientDocuments');
@@ -62,32 +64,45 @@ const TeleconsultationRoom = lazyPage(() => import('./pages/patient/Teleconsulta
 const PatientNotifications = lazyPage(() => import('./pages/patient/PatientNotifications'), 'PatientNotifications');
 const PatientSettings = lazyPage(() => import('./pages/patient/PatientSettings'), 'PatientSettings');
 
-// Hospital Pages (Lazy Loaded)
+// Hospital Pages
 const HospitalDashboard = lazyPage(() => import('./pages/hospital/HospitalDashboard'), 'HospitalDashboard');
+const HospitalOperations = lazyPage(() => import('./pages/hospital/HospitalOperations'), 'HospitalOperations');
+const MedicineInventory = lazyPage(() => import('./pages/hospital/MedicineInventory'), 'MedicineInventory');
 const HospitalRequests = lazyPage(() => import('./pages/hospital/HospitalRequests'), 'HospitalRequests');
 const HospitalRequestDetails = lazyPage(() => import('./pages/hospital/HospitalRequestDetails'), 'HospitalRequestDetails');
 const HospitalDepartments = lazyPage(() => import('./pages/hospital/HospitalDepartments'), 'HospitalDepartments');
 const HospitalProfile = lazyPage(() => import('./pages/hospital/HospitalProfile'), 'HospitalProfile');
 const HospitalReferrals = lazyPage(() => import('./pages/hospital/HospitalReferrals'), 'HospitalReferrals');
+const HospitalNotifications = lazyPage(() => import('./pages/hospital/HospitalNotifications'), 'HospitalNotifications');
 
-// Doctor Pages (Lazy Loaded)
+// Doctor Pages
 const DoctorDashboard = lazyPage(() => import('./pages/doctor/DoctorDashboard'), 'DoctorDashboard');
+const DoctorAppointments = lazyPage(() => import('./pages/doctor/DoctorAppointments'), 'DoctorAppointments');
+const DoctorMedicalRecords = lazyPage(() => import('./pages/doctor/DoctorMedicalRecords'), 'DoctorMedicalRecords');
 const DoctorConsultationDesk = lazyPage(() => import('./pages/doctor/DoctorConsultationDesk'), 'DoctorConsultationDesk');
 const DoctorPatientReview = lazyPage(() => import('./pages/doctor/DoctorPatientReview'), 'DoctorPatientReview');
+const DoctorProfile = lazyPage(() => import('./pages/doctor/DoctorProfile'), 'DoctorProfile');
 
-// Frontline ASHA Pages (Lazy Loaded)
+// Frontline ASHA Pages
 const AshaDashboard = lazyPage(() => import('./pages/asha/AshaDashboard'), 'AshaDashboard');
+const AshaHealthVisits = lazyPage(() => import('./pages/asha/AshaHealthVisits'), 'AshaHealthVisits');
 const AshaTriageWizard = lazyPage(() => import('./pages/asha/AshaTriageWizard'), 'AshaTriageWizard');
 const AshaBarrierEntry = lazyPage(() => import('./pages/asha/AshaBarrierEntry'), 'AshaBarrierEntry');
 const AshaProfile = lazyPage(() => import('./pages/asha/AshaProfile'), 'AshaProfile');
 
-// Government Pages (Lazy Loaded)
+// Government Pages
 const GovernmentDashboard = lazyPage(() => import('./pages/government/GovernmentDashboard'), 'GovernmentDashboard');
+const FacilityPerformance = lazyPage(() => import('./pages/government/FacilityPerformance'), 'FacilityPerformance');
+const GovernmentCareLeakage = lazyPage(() => import('./pages/government/GovernmentCareLeakage'), 'GovernmentCareLeakage');
+const GovernmentPopulationBarriers = lazyPage(() => import('./pages/government/GovernmentPopulationBarriers'), 'GovernmentPopulationBarriers');
 const GovernmentFrictionMap = lazyPage(() => import('./pages/government/GovernmentFrictionMap'), 'GovernmentFrictionMap');
 const GovernmentInterventions = lazyPage(() => import('./pages/government/GovernmentInterventions'), 'GovernmentInterventions');
 
-// Admin Pages (Lazy Loaded)
+// Admin Pages
 const AdminDashboard = lazyPage(() => import('./pages/admin/AdminDashboard'), 'AdminDashboard');
+const UserManagement = lazyPage(() => import('./pages/admin/UserManagement'), 'UserManagement');
+const VerificationQueue = lazyPage(() => import('./pages/admin/VerificationQueue'), 'VerificationQueue');
+const SystemHealth = lazyPage(() => import('./pages/admin/SystemHealth'), 'SystemHealth');
 const PopulationFrictionMap = lazyPage(() => import('./pages/admin/PopulationFrictionMap'), 'PopulationFrictionMap');
 const WhatIfSimulator = lazyPage(() => import('./pages/admin/WhatIfSimulator'), 'WhatIfSimulator');
 const InterventionOptimizer = lazyPage(() => import('./pages/admin/InterventionOptimizer'), 'InterventionOptimizer');
@@ -141,6 +156,8 @@ export const App: React.FC = () => {
                       <Route path="/patient" element={<PatientLayout />}>
                         <Route index element={<Navigate to="/patient/dashboard" replace />} />
                         <Route path="dashboard" element={<PatientDashboard />} />
+                        <Route path="appointments" element={<PatientAppointments />} />
+                        <Route path="medical-history" element={<MedicalHistory />} />
                         <Route path="profile" element={<PatientProfile />} />
                         <Route path="hospitals" element={<NearbyHospitals />} />
                         <Route path="hospitals/:id" element={<HospitalDetails />} />
@@ -159,13 +176,15 @@ export const App: React.FC = () => {
                       <Route path="/hospital" element={<HospitalLayout />}>
                         <Route index element={<Navigate to="/hospital/dashboard" replace />} />
                         <Route path="dashboard" element={<HospitalDashboard />} />
+                        <Route path="operations" element={<HospitalOperations />} />
+                        <Route path="inventory" element={<MedicineInventory />} />
                         <Route path="referrals" element={<HospitalReferrals />} />
                         <Route path="requests" element={<HospitalRequests />} />
                         <Route path="requests/:id" element={<HospitalRequestDetails />} />
                         <Route path="departments" element={<HospitalDepartments />} />
                         <Route path="teleconsult" element={<TeleconsultationRoom />} />
                         <Route path="profile" element={<HospitalProfile />} />
-                        <Route path="notifications" element={<PatientNotifications />} />
+                        <Route path="notifications" element={<HospitalNotifications />} />
                         <Route path="settings" element={<PatientSettings />} />
                       </Route>
 
@@ -173,38 +192,45 @@ export const App: React.FC = () => {
                       <Route path="/asha" element={<AshaLayout />}>
                         <Route index element={<Navigate to="/asha/dashboard" replace />} />
                         <Route path="dashboard" element={<AshaDashboard />} />
+                        <Route path="visits" element={<AshaHealthVisits />} />
                         <Route path="wizard" element={<AshaTriageWizard />} />
                         <Route path="barriers" element={<AshaBarrierEntry />} />
                         <Route path="recalls" element={<AshaDashboard />} />
                         <Route path="profile" element={<AshaProfile />} />
                       </Route>
 
-                      {/* PHC & District Doctor Desk */}
+                      {/* Doctor Portal */}
                       <Route path="/doctor" element={<DoctorLayout />}>
                         <Route index element={<Navigate to="/doctor/dashboard" replace />} />
                         <Route path="dashboard" element={<DoctorDashboard />} />
+                        <Route path="appointments" element={<DoctorAppointments />} />
+                        <Route path="medical-records" element={<DoctorMedicalRecords />} />
                         <Route path="queue" element={<DoctorConsultationDesk />} />
                         <Route path="patient-review" element={<DoctorPatientReview />} />
-                        <Route path="profile" element={<DoctorDashboard />} />
+                        <Route path="profile" element={<DoctorProfile />} />
                       </Route>
 
                       {/* Government & Public Health Governance */}
                       <Route path="/government" element={<GovernmentLayout />}>
                         <Route index element={<Navigate to="/government/dashboard" replace />} />
                         <Route path="dashboard" element={<GovernmentDashboard />} />
+                        <Route path="facilities" element={<FacilityPerformance />} />
                         <Route path="friction-map" element={<GovernmentFrictionMap />} />
-                        <Route path="leakage" element={<GovernmentDashboard />} />
-                        <Route path="barriers" element={<GovernmentDashboard />} />
+                        <Route path="leakage" element={<GovernmentCareLeakage />} />
+                        <Route path="barriers" element={<GovernmentPopulationBarriers />} />
                         <Route path="interventions" element={<GovernmentInterventions />} />
                       </Route>
 
-                      {/* Onboarding Route for New Signups */}
+                      {/* Onboarding Route */}
                       <Route path="/onboarding" element={<OnboardingModal isOpen={true} />} />
 
                       {/* Admin Intelligence Suite */}
                       <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<Navigate to="/admin/dashboard" replace />} />
                         <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="users" element={<UserManagement />} />
+                        <Route path="verification" element={<VerificationQueue />} />
+                        <Route path="system-health" element={<SystemHealth />} />
                         <Route path="friction-map" element={<PopulationFrictionMap />} />
                         <Route path="simulator" element={<WhatIfSimulator />} />
                         <Route path="digital-twin" element={<DigitalTwinSimulator />} />

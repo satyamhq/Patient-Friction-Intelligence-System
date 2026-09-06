@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { getDB } from '../database/db.js';
+import { Referral, IReferral } from '../models/Referral.js';
 
 export interface ReferralRecord {
   id: string;
@@ -13,7 +13,7 @@ export interface ReferralRecord {
   targetDepartment: string;
   reason: string;
   priority: 'routine' | 'urgent' | 'emergency';
-  status: 'initiated' | 'accepted' | 'in-transit' | 'consulted' | 'completed' | 'counter-referred';
+  status: string;
   clinicalSummary: string;
   vitals?: any;
   frictionFlags?: {
@@ -33,51 +33,6 @@ export interface ReferralRecord {
   createdAt: string;
   updatedAt: string;
 }
-
-// In-memory or database referral store
-const referralsStore: Map<string, ReferralRecord> = new Map();
-
-// Initialize realistic seeded demo referrals
-const seedInitialReferrals = () => {
-  if (referralsStore.size > 0) return;
-
-  const demoRef: ReferralRecord = {
-    id: 'ref-demo-101',
-    patientId: 'pat-sunita-devi',
-    patientName: 'Sunita Devi',
-    abhaNumber: '91-4829-1029-4821',
-    referringFacility: 'Angara Primary Health Centre',
-    referringDoctor: 'Dr. Alok Verma (MO, Angara PHC)',
-    targetFacility: 'Ranchi District Hospital',
-    targetDepartment: 'Obstetrics & High-Risk Pregnancy Clinic',
-    reason: '32 Weeks Gestation with Persistent Hypertension (150/98) & Pedal Edema',
-    priority: 'urgent',
-    status: 'initiated',
-    clinicalSummary: 'G3P2 with 32 weeks gestation. Mild proteinuria, pedal edema ++. Requires ultrasound Doppler and obstetric specialist staging.',
-    vitals: { systolicBP: 150, diastolicBP: 98, fetalHeartRate: 142, hb: 9.4 },
-    frictionFlags: {
-      transitAssistance: true,
-      escortRequired: true,
-      languageBarrier: 'Santali / Rural Hindi',
-      dailyWageVoucher: true,
-    },
-    timeline: [
-      {
-        status: 'initiated',
-        timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-        facility: 'Angara Primary Health Centre',
-        note: 'Referral packet created. Non-clinical transport assistance flag raised.',
-        actor: 'Dr. Alok Verma',
-      },
-    ],
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-  };
-
-  referralsStore.set(demoRef.id, demoRef);
-};
-
-seedInitialReferrals();
 
 export const createReferral = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -101,18 +56,18 @@ export const createReferral = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const id = 'ref-' + crypto.randomBytes(4).toString('hex');
+    const code = 'REF-' + crypto.randomBytes(3).toString('hex').toUpperCase();
     const now = new Date().toISOString();
 
-    const newReferral: ReferralRecord = {
-      id,
+    const referralData = {
+      referralCode: code,
       patientId: patientId || 'pat-' + crypto.randomBytes(3).toString('hex'),
       patientName,
       abhaNumber: abhaNumber || '91-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000),
-      referringFacility: referringFacility || 'Angara Primary Health Centre',
-      referringDoctor: referringDoctor || (req as any).user?.name || 'Medical Officer',
-      targetFacility,
-      targetDepartment: targetDepartment || 'General Medicine & Specialist OPD',
+      referringFacilityName: referringFacility || 'Referring Health Centre',
+      referringDoctorName: referringDoctor || (req as any).user?.name || 'Medical Officer',
+      receivingFacilityName: targetFacility,
+      receivingDepartment: targetDepartment || 'General Medicine & Specialist OPD',
       reason,
       priority,
       status: 'initiated',
@@ -123,21 +78,31 @@ export const createReferral = async (req: Request, res: Response): Promise<void>
         {
           status: 'initiated',
           timestamp: now,
-          facility: referringFacility || 'Referring PHC',
-          note: `Referral initiated for ${targetDepartment}. Priority: ${priority.toUpperCase()}.`,
-          actor: referringDoctor || 'Medical Officer',
+          facility: referringFacility || 'Referring Health Centre',
+          note: `Referral initiated for ${targetDepartment || 'Specialist OPD'}. Priority: ${priority.toUpperCase()}.`,
+          actor: referringDoctor || (req as any).user?.name || 'Medical Officer',
         },
       ],
       createdAt: now,
       updatedAt: now,
     };
 
-    referralsStore.set(id, newReferral);
+    const newReferral = await Referral.create(referralData);
+
+    // Normalize representation for client compatibility
+    const normalized = {
+      ...newReferral,
+      id: newReferral.id || newReferral._id,
+      referringFacility: newReferral.referringFacilityName,
+      referringDoctor: newReferral.referringDoctorName,
+      targetFacility: newReferral.receivingFacilityName,
+      targetDepartment: newReferral.receivingDepartment,
+    };
 
     res.status(201).json({
       success: true,
       message: 'Stateful cross-facility referral initiated successfully.',
-      referral: newReferral,
+      referral: normalized,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -146,31 +111,38 @@ export const createReferral = async (req: Request, res: Response): Promise<void>
 
 export const getReferrals = async (req: Request, res: Response): Promise<void> => {
   try {
-    seedInitialReferrals();
     const { patientId, targetFacility, status, abhaNumber } = req.query;
 
-    let list = Array.from(referralsStore.values());
+    let filter: any = {};
+    if (patientId) filter.patientId = patientId;
+    if (status) filter.status = status;
 
-    if (patientId) {
-      list = list.filter((r) => r.patientId === patientId);
-    }
+    let records: any[] = await Referral.find(filter).sort({ createdAt: -1 });
+
     if (abhaNumber) {
-      list = list.filter((r) => r.abhaNumber.includes(abhaNumber as string));
+      records = records.filter((r) => r.abhaNumber && r.abhaNumber.includes(abhaNumber as string));
     }
     if (targetFacility) {
-      list = list.filter((r) => r.targetFacility.toLowerCase().includes((targetFacility as string).toLowerCase()));
-    }
-    if (status) {
-      list = list.filter((r) => r.status === status);
+      records = records.filter((r) =>
+        (r.receivingFacilityName || r.targetFacility || '')
+          .toLowerCase()
+          .includes((targetFacility as string).toLowerCase())
+      );
     }
 
-    // Sort newest first
-    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const normalized = records.map((r) => ({
+      ...r,
+      id: r.id || r._id,
+      referringFacility: r.referringFacilityName || r.referringFacility,
+      referringDoctor: r.referringDoctorName || r.referringDoctor,
+      targetFacility: r.receivingFacilityName || r.targetFacility,
+      targetDepartment: r.receivingDepartment || r.targetDepartment,
+    }));
 
     res.json({
       success: true,
-      count: list.length,
-      referrals: list,
+      count: normalized.length,
+      referrals: normalized,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -179,18 +151,26 @@ export const getReferrals = async (req: Request, res: Response): Promise<void> =
 
 export const getReferralById = async (req: Request, res: Response): Promise<void> => {
   try {
-    seedInitialReferrals();
     const id = String(req.params.id);
-    const referral = referralsStore.get(id);
+    const referral = await Referral.findOne({ $or: [{ id }, { _id: id }, { referralCode: id }] });
 
     if (!referral) {
       res.status(404).json({ success: false, message: 'Referral record not found.' });
       return;
     }
 
+    const normalized = {
+      ...referral,
+      id: referral.id || referral._id,
+      referringFacility: referral.referringFacilityName || referral.referringFacility,
+      referringDoctor: referral.referringDoctorName || referral.referringDoctor,
+      targetFacility: referral.receivingFacilityName || referral.targetFacility,
+      targetDepartment: referral.receivingDepartment || referral.targetDepartment,
+    };
+
     res.json({
       success: true,
-      referral,
+      referral: normalized,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -199,38 +179,56 @@ export const getReferralById = async (req: Request, res: Response): Promise<void
 
 export const updateReferralStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    seedInitialReferrals();
     const id = String(req.params.id);
     const { status, note, facility, actor } = req.body;
 
-    const referral = referralsStore.get(id);
+    const referral = await Referral.findOne({ $or: [{ id }, { _id: id }, { referralCode: id }] });
     if (!referral) {
       res.status(404).json({ success: false, message: 'Referral record not found.' });
       return;
     }
 
-    const validStatuses = ['initiated', 'accepted', 'in-transit', 'consulted', 'completed', 'counter-referred'];
+    const validStatuses = ['initiated', 'accepted', 'in-transit', 'in_transit', 'consulted', 'completed', 'counter-referred', 'counter_referred', 'rejected'];
     if (!validStatuses.includes(status)) {
-      res.status(400).json({ success: false, message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      res.status(400).json({ success: false, message: `Invalid status: ${status}` });
       return;
     }
 
-    referral.status = status;
-    referral.updatedAt = new Date().toISOString();
-    referral.timeline.push({
+    const now = new Date().toISOString();
+    const updatedTimeline = Array.isArray(referral.timeline) ? [...referral.timeline] : [];
+    updatedTimeline.push({
       status,
-      timestamp: new Date().toISOString(),
-      facility: facility || referral.targetFacility,
+      timestamp: now,
+      facility: facility || referral.receivingFacilityName || referral.targetFacility || 'Target Facility',
       note: note || `Referral state updated to ${status}.`,
       actor: actor || (req as any).user?.name || 'Facility Coordinator',
     });
 
-    referralsStore.set(id, referral);
+    const updated = await Referral.findByIdAndUpdate(
+      referral.id || referral._id,
+      {
+        status,
+        timeline: updatedTimeline,
+        updatedAt: now,
+      },
+      { new: true }
+    );
+
+    const normalized = {
+      ...(updated || referral),
+      id: referral.id || referral._id,
+      status,
+      timeline: updatedTimeline,
+      referringFacility: referral.referringFacilityName || referral.referringFacility,
+      referringDoctor: referral.referringDoctorName || referral.referringDoctor,
+      targetFacility: referral.receivingFacilityName || referral.targetFacility,
+      targetDepartment: referral.receivingDepartment || referral.targetDepartment,
+    };
 
     res.json({
       success: true,
       message: `Referral state transitioned to ${status}.`,
-      referral,
+      referral: normalized,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -242,29 +240,49 @@ export const counterReferPatient = async (req: Request, res: Response): Promise<
     const id = String(req.params.id);
     const { instructions, medicationsPrescribed, followUpSchedule } = req.body;
 
-    const referral = referralsStore.get(id);
+    const referral = await Referral.findOne({ $or: [{ id }, { _id: id }, { referralCode: id }] });
     if (!referral) {
       res.status(404).json({ success: false, message: 'Referral record not found.' });
       return;
     }
 
-    referral.status = 'counter-referred';
-    referral.counterReferralNotes = instructions;
-    referral.updatedAt = new Date().toISOString();
-    referral.timeline.push({
+    const now = new Date().toISOString();
+    const updatedTimeline = Array.isArray(referral.timeline) ? [...referral.timeline] : [];
+    updatedTimeline.push({
       status: 'counter-referred',
-      timestamp: new Date().toISOString(),
-      facility: referral.targetFacility,
-      note: `Specialist consultation complete. Counter-referred back to ${referral.referringFacility} with local follow-up protocol.`,
+      timestamp: now,
+      facility: referral.receivingFacilityName || referral.targetFacility,
+      note: `Specialist consultation complete. Counter-referred with local follow-up protocol.`,
       actor: (req as any).user?.name || 'Receiving Specialist',
     });
 
-    referralsStore.set(id, referral);
+    const updated = await Referral.findByIdAndUpdate(
+      referral.id || referral._id,
+      {
+        status: 'counter-referred',
+        counterReferralNotes: instructions,
+        timeline: updatedTimeline,
+        updatedAt: now,
+      },
+      { new: true }
+    );
+
+    const normalized = {
+      ...(updated || referral),
+      id: referral.id || referral._id,
+      status: 'counter-referred',
+      counterReferralNotes: instructions,
+      timeline: updatedTimeline,
+      referringFacility: referral.referringFacilityName || referral.referringFacility,
+      referringDoctor: referral.referringDoctorName || referral.referringDoctor,
+      targetFacility: referral.receivingFacilityName || referral.targetFacility,
+      targetDepartment: referral.receivingDepartment || referral.targetDepartment,
+    };
 
     res.json({
       success: true,
       message: 'Patient counter-referred back to primary care with complete follow-up protocol.',
-      referral,
+      referral: normalized,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

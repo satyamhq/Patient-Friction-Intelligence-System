@@ -21,13 +21,32 @@ export interface IPatientLocation {
   };
 }
 
+export interface IAllergy {
+  substance: string;
+  reaction: string;
+  severity: 'mild' | 'moderate' | 'severe';
+}
+
+export interface ICurrentMedication {
+  name: string;
+  dosage: string;
+  frequency: string;
+  prescribedBy?: string;
+  startDate?: string;
+}
+
 export interface IPatient {
   _id?: any;
   id?: any;
   userId: any;
   patientCode: string;
+  // Personal info
+  dateOfBirth?: string | Date;
   age: number;
   gender: 'male' | 'female' | 'other';
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'Unknown';
+  abhaNumber?: string;
+  // Contact & accessibility
   preferredLanguage: string;
   preferredDialect?: string;
   simpleLanguageMode?: boolean;
@@ -36,7 +55,15 @@ export interface IPatient {
   phone?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
   location: IPatientLocation | any;
+  // Health info
+  allergies?: IAllergy[] | any[];
+  chronicConditions?: string[];
+  currentMedications?: ICurrentMedication[] | any[];
+  surgicalHistory?: string[];
+  familyHistory?: string[];
+  // Friction / accessibility factors
   transportAvailability: TransportLevel;
   digitalAccessLevel: DigitalAccessLevel;
   familySupport: FamilySupportLevel;
@@ -44,10 +71,17 @@ export interface IPatient {
   financialAccessibility: FinancialAccessLevel;
   appointmentFlexibility: AppointmentFlexibility;
   residenceType: ResidenceType;
+  // Care linkage
   preferredHospitalId?: any;
+  assignedAshaWorkerId?: any;
   activeFrictionProfileId?: any;
   activeCareRiskId?: any;
   currentJourneyStage?: string;
+  // Profile status
+  isProfileComplete?: boolean;
+  consentGiven?: boolean;
+  consentDate?: string | Date;
+  // Timestamps
   createdAt?: string | Date;
   updatedAt?: string | Date;
   save?: () => Promise<any>;

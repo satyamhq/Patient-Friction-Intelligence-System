@@ -92,44 +92,7 @@ export const AshaDashboard: React.FC = () => {
         setTasks(res.data.tasks);
       }
     } catch {
-      // Fallback demo tasks if offline
-      setTasks([
-        {
-          id: 'task-sunita-anc3',
-          patientId: 'pat-sunita-devi',
-          patientName: 'Sunita Devi',
-          phone: '9835102948',
-          village: 'Hesal Village (Angara)',
-          protocolType: 'MATERNAL_ANC',
-          missedMilestone: '3rd Trimester High-Risk ANC Checkup (BP 155/98 in previous record)',
-          daysOverdue: 6,
-          severity: 'CRITICAL',
-          checklist: [
-            'Blood Pressure measurement (Manual Sphygmomanometer)',
-            'Check for severe bilateral pedal edema',
-            'Enquire about persistent epigastric pain or visual blurring',
-            'Escort booking to Angara PHC / District Hospital via 108',
-          ],
-          status: 'OPEN',
-        },
-        {
-          id: 'task-priya-uip',
-          patientId: 'pat-priya-kumari',
-          patientName: 'Baby of Priya Kumari (14 weeks)',
-          phone: '9431804921',
-          village: 'Rajaulatu Tola',
-          protocolType: 'CHILD_IMMUNIZATION',
-          missedMilestone: 'Pentavalent-3 & Rotavirus-3 Dose Overdue',
-          daysOverdue: 12,
-          severity: 'HIGH',
-          checklist: [
-            'Confirm child is free of acute fever/diarrhea',
-            'Administer or coordinate Pentavalent-3 at Tuesday Village Health & Nutrition Day (VHND)',
-            'Update MCP physical card and ABDM longitudinal record',
-          ],
-          status: 'OPEN',
-        },
-      ]);
+      setTasks([]);
     } finally {
       setLoadingTasks(false);
     }
@@ -137,6 +100,11 @@ export const AshaDashboard: React.FC = () => {
 
   useEffect(() => {
     loadTasks();
+    api.get('/asha/profile').then((res) => {
+      if (res.data?.success && res.data?.worker?.assignedVillage) {
+        setRegForm((prev) => ({ ...prev, village: res.data.worker.assignedVillage }));
+      }
+    }).catch(() => {});
   }, []);
 
   // Handle register patient
@@ -176,7 +144,7 @@ export const AshaDashboard: React.FC = () => {
         gender: 'Female',
         age: '',
         phone: '',
-        village: 'Hesal Village',
+        village: regForm.village,
       });
     } catch (err) {
       console.error(err);

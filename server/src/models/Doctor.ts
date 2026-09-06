@@ -20,6 +20,19 @@ export interface IDoctor {
   isAvailable?: boolean;
   rating?: number;
   totalPatientsConsulted?: number;
+  // New fields
+  verificationStatus?: 'pending' | 'verified' | 'rejected' | 'suspended';
+  verificationNotes?: string;
+  verifiedAt?: string | Date;
+  verifiedBy?: string;
+  languages?: string[];
+  bio?: string;
+  yearsAtCurrentFacility?: number;
+  isProfileComplete?: boolean;
+  gender?: 'male' | 'female' | 'other';
+  profileImageUrl?: string;
+  telemedicineEnabled?: boolean;
+  maxPatientsPerDay?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   save?: () => Promise<any>;

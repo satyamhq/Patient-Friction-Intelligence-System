@@ -7,10 +7,13 @@ import { FrictionInteraction } from '../models/FrictionInteraction.js';
 import { CareJourney } from '../models/CareJourney.js';
 import { HospitalRequest } from '../models/HospitalRequest.js';
 import { Hospital } from '../models/Hospital.js';
+import { MedicalRecord } from '../models/MedicalRecord.js';
+import { Appointment } from '../models/Appointment.js';
 import { FrictionEngine } from '../intelligence/friction/frictionEngine.js';
 import { FrictionInteractionEngine } from '../intelligence/causal/frictionInteractionEngine.js';
 import { RiskEngine } from '../intelligence/risk/riskEngine.js';
 import { AuditService } from '../services/auditService.js';
+import crypto from 'crypto';
 
 async function calculateRealFrictionForPatient(patientObj: any) {
   let nearestHosp: any = null;
@@ -39,27 +42,36 @@ async function calculateRealFrictionForPatient(patientObj: any) {
 }
 
 export class PatientController {
+  /**
+   * GET /api/patients/me
+   * Returns the authenticated patient's profile only.
+   * SECURITY: Never falls through to another patient's record.
+   */
   public static async getMe(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      let patient = await Patient.findOne({ userId: req.user?._id })
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId })
         .populate('preferredHospitalId')
         .populate('activeFrictionProfileId')
         .populate('activeCareRiskId');
 
       if (!patient) {
-        patient = await Patient.findOne({})
-          .populate('preferredHospitalId')
-          .populate('activeFrictionProfileId')
-          .populate('activeCareRiskId');
-      }
-
-      if (!patient) {
-        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        // Profile not yet created — prompt onboarding
+        res.status(404).json({
+          success: false,
+          message: 'Patient profile not found. Please complete your profile setup.',
+          needsOnboarding: true,
+        });
         return;
       }
 
       const activeRequests = await HospitalRequest.find({
-        patientId: patient._id,
+        patientId: patient._id || patient.id,
         status: { $nin: ['COMPLETED', 'CANCELLED', 'REJECTED'] },
       })
         .populate('hospitalId', 'name address phone emergencyAvailable')
@@ -75,289 +87,486 @@ export class PatientController {
     }
   }
 
-  public static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+  /**
+   * POST /api/patients/profile
+   * Creates a new patient profile for the authenticated user.
+   */
+  public static async createProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      let patient = await Patient.findOne({ userId: req.user?._id });
-      if (!patient) {
-        patient = await Patient.findOne({});
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
       }
-      if (!patient) {
-        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+
+      // Don't allow duplicate profiles
+      const existing = await Patient.findOne({ userId });
+      if (existing) {
+        res.status(409).json({ success: false, message: 'Patient profile already exists. Use the update endpoint.' });
         return;
       }
 
       const {
-        age,
+        age, dateOfBirth, gender, bloodGroup, abhaNumber,
+        phone, emergencyContactName, emergencyContactPhone, emergencyContactRelation,
+        preferredLanguage, preferredDialect, simpleLanguageMode,
+        location,
+        transportAvailability, digitalAccessLevel, familySupport,
+        documentationStatus, financialAccessibility, appointmentFlexibility,
+        residenceType, allergies, chronicConditions, currentMedications,
+        preferredHospitalId, consentGiven,
+      } = req.body;
+
+      if (!age || !gender || !location?.address || !preferredLanguage) {
+        res.status(400).json({
+          success: false,
+          message: 'Age, gender, address, and preferred language are required.',
+        });
+        return;
+      }
+
+      const patientCode = 'PAT-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+
+      const patient = await Patient.create({
+        userId,
+        patientCode,
+        age: Number(age),
+        dateOfBirth,
         gender,
+        bloodGroup: bloodGroup || 'Unknown',
+        abhaNumber,
         preferredLanguage,
+        preferredDialect,
+        simpleLanguageMode: simpleLanguageMode || false,
         phone,
         emergencyContactName,
         emergencyContactPhone,
-        transportAvailability,
-        digitalAccessLevel,
-        familySupport,
-        documentationStatus,
-        financialAccessibility,
-        appointmentFlexibility,
-        residenceType,
+        emergencyContactRelation,
         location,
-      } = req.body;
+        transportAvailability: transportAvailability || 'moderate',
+        digitalAccessLevel: digitalAccessLevel || 'basic',
+        familySupport: familySupport || 'moderate',
+        documentationStatus: documentationStatus || 'partial',
+        financialAccessibility: financialAccessibility || 'moderate_budget',
+        appointmentFlexibility: appointmentFlexibility || 'moderate',
+        residenceType: residenceType || 'semi_urban',
+        allergies: allergies || [],
+        chronicConditions: chronicConditions || [],
+        currentMedications: currentMedications || [],
+        preferredHospitalId,
+        isProfileComplete: true,
+        consentGiven: consentGiven || false,
+        consentDate: consentGiven ? new Date().toISOString() : undefined,
+      });
 
-      if (age !== undefined) patient.age = age;
-      if (gender) patient.gender = gender;
-      if (preferredLanguage) patient.preferredLanguage = preferredLanguage;
-      if (phone) patient.phone = phone;
-      if (emergencyContactName) patient.emergencyContactName = emergencyContactName;
-      if (emergencyContactPhone) patient.emergencyContactPhone = emergencyContactPhone;
-      if (transportAvailability) patient.transportAvailability = transportAvailability;
-      if (digitalAccessLevel) patient.digitalAccessLevel = digitalAccessLevel;
-      if (familySupport) patient.familySupport = familySupport;
-      if (documentationStatus) patient.documentationStatus = documentationStatus;
-      if (financialAccessibility) patient.financialAccessibility = financialAccessibility;
-      if (appointmentFlexibility) patient.appointmentFlexibility = appointmentFlexibility;
-      if (residenceType) patient.residenceType = residenceType;
-
-      if (location) {
-        let existingLoc = patient.location || {};
-        if (typeof existingLoc === 'string') {
-          try {
-            existingLoc = JSON.parse(existingLoc);
-          } catch {
-            existingLoc = {};
+      // Calculate initial friction profile
+      try {
+        const frictionResult = await calculateRealFrictionForPatient(patient);
+        if (frictionResult) {
+          const fp = await FrictionProfile.create({
+            patientId: patient._id || patient.id,
+            ...frictionResult,
+          });
+          await Patient.updateOne(
+            { _id: patient._id || patient.id },
+            { activeFrictionProfileId: fp._id || fp.id }
+          );
+          const riskResult = RiskEngine.evaluate(frictionResult);
+          if (riskResult) {
+            const cr = await CareRisk.create({
+              patientId: patient._id || patient.id,
+              ...riskResult,
+            });
+            await Patient.updateOne(
+              { _id: patient._id || patient.id },
+              { activeCareRiskId: cr._id || cr.id }
+            );
           }
         }
-        const newLat = location.latitude !== undefined ? location.latitude : (existingLoc.latitude || 31.2533);
-        const newLng = location.longitude !== undefined ? location.longitude : (existingLoc.longitude || 75.7042);
-        patient.location = {
-          address: location.address || existingLoc.address || 'UniCenter, LPU Campus',
-          city: location.city || existingLoc.city || 'Phagwara',
-          state: location.state || existingLoc.state || 'Punjab',
-          pincode: location.pincode || existingLoc.pincode || '144411',
-          latitude: newLat,
-          longitude: newLng,
-          geoJSON: {
-            type: 'Point',
-            coordinates: [newLng, newLat],
-          },
-        };
+      } catch (fpErr: any) {
+        console.warn('[PatientController] Friction calculation failed (non-critical):', fpErr.message);
       }
 
-      // Re-run Friction and Risk Engines using real nearest hospital distance
-      const pObj = typeof patient.toObject === 'function' ? patient.toObject() : patient;
-      const frictionCalc = await calculateRealFrictionForPatient(pObj);
-      const frictionProfile = await FrictionProfile.create({
-        patientId: patient._id,
-        ...frictionCalc,
+      await AuditService.log('PATIENT_PROFILE_CREATED', 'Patient', req, {
+        userId,
+        actorRole: 'patient',
+        details: { patientCode, gender, residenceType },
       });
 
-      // Detect Compound Synergies
-      const interactions = FrictionInteractionEngine.detectInteractions(frictionCalc);
-      await FrictionInteraction.deleteMany({ patientId: patient._id });
-      if (interactions.length > 0) {
-        await FrictionInteraction.insertMany(
-          interactions.map((i) => ({
-            patientId: patient._id,
-            frictionProfileId: frictionProfile._id,
-            ...i,
-          }))
-        );
-      }
-
-      const riskCalc = RiskEngine.evaluate(frictionCalc);
-      const careRisk = await CareRisk.create({
-        patientId: patient._id,
-        frictionProfileId: frictionProfile._id,
-        ...riskCalc,
-      });
-
-      patient.activeFrictionProfileId = frictionProfile._id as any;
-      patient.activeCareRiskId = careRisk._id as any;
-      await patient.save();
-
-      await AuditService.log('PATIENT_PROFILE_UPDATED', 'Patient', req, {
-        userId: req.user?._id,
-        resourceId: patient._id.toString(),
-        details: { frictionScore: frictionCalc.overallFrictionScore },
-      });
-
-      res.status(200).json({
-        success: true,
-        message: 'Patient profile and friction metrics updated successfully.',
-        patient,
-        frictionProfile,
-        careRisk,
-        interactions,
-      });
+      res.status(201).json({ success: true, message: 'Patient profile created successfully.', patient });
     } catch (error: any) {
-      console.error('[PatientController.updateProfile Error]', error);
-      res.status(500).json({ success: false, message: error.message || 'Update failed.' });
+      res.status(500).json({ success: false, message: error.message || 'Failed to create patient profile.' });
     }
   }
 
-  public static async getFrictionProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+  /**
+   * PUT /api/patients/profile
+   * Updates the authenticated patient's own profile.
+   */
+  public static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      let patient = await Patient.findOne({ userId: req.user?._id });
-      if (!patient) {
-        patient = await Patient.findOne({});
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
       }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found. Please create your profile first.' });
+        return;
+      }
+
+      const allowedUpdates = [
+        'age', 'dateOfBirth', 'gender', 'bloodGroup', 'abhaNumber',
+        'phone', 'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation',
+        'preferredLanguage', 'preferredDialect', 'simpleLanguageMode', 'voiceEnabled', 'textToSpeechEnabled',
+        'location', 'transportAvailability', 'digitalAccessLevel', 'familySupport',
+        'documentationStatus', 'financialAccessibility', 'appointmentFlexibility', 'residenceType',
+        'allergies', 'chronicConditions', 'currentMedications', 'surgicalHistory', 'familyHistory',
+        'preferredHospitalId', 'consentGiven',
+      ];
+
+      const updates: Record<string, any> = {};
+      for (const key of allowedUpdates) {
+        if (req.body[key] !== undefined) updates[key] = req.body[key];
+      }
+      updates.updatedAt = new Date().toISOString();
+
+      Object.assign(patient, updates);
+      await patient.save();
+
+      // Recalculate friction if location/accessibility changed
+      const accessibilityFields = ['location', 'transportAvailability', 'digitalAccessLevel', 'familySupport', 'residenceType'];
+      if (accessibilityFields.some((f) => updates[f] !== undefined)) {
+        try {
+          const frictionResult = await calculateRealFrictionForPatient(patient);
+          if (frictionResult && patient.activeFrictionProfileId) {
+            await FrictionProfile.updateOne(
+              { _id: patient.activeFrictionProfileId },
+              { $set: frictionResult }
+            );
+          }
+        } catch (fpErr: any) {
+          console.warn('[PatientController] Friction recalculation skipped:', fpErr.message);
+        }
+      }
+
+      await AuditService.log('PATIENT_PROFILE_UPDATED', 'Patient', req, {
+        userId,
+        actorRole: 'patient',
+        details: { updatedFields: Object.keys(updates) },
+      });
+
+      res.status(200).json({ success: true, message: 'Profile updated successfully.', patient });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to update profile.' });
+    }
+  }
+
+  /**
+   * GET /api/patients/medical-history
+   * Returns the authenticated patient's longitudinal medical records.
+   */
+  public static async getMedicalHistory(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
       if (!patient) {
         res.status(404).json({ success: false, message: 'Patient profile not found.' });
         return;
       }
 
-      let profile = await FrictionProfile.findOne({ patientId: patient._id }).sort({
-        createdAt: -1,
+      const patientId = patient._id || patient.id;
+      const page = parseInt(String(req.query.page || '1'));
+      const limit = Math.min(parseInt(String(req.query.limit || '20')), 50);
+      const skip = (page - 1) * limit;
+
+      const records = await MedicalRecord.find({ patientId })
+        .sort({ visitDate: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      const total = await MedicalRecord.countDocuments({ patientId });
+
+      await AuditService.log('PATIENT_MEDICAL_HISTORY_VIEWED', 'MedicalRecord', req, {
+        userId,
+        actorRole: 'patient',
+        details: { patientId },
       });
-
-      if (!profile) {
-        const pObj = typeof patient.toObject === 'function' ? patient.toObject() : patient;
-        const frictionCalc = await calculateRealFrictionForPatient(pObj);
-        profile = await FrictionProfile.create({
-          patientId: patient._id,
-          ...frictionCalc,
-        });
-      }
-
-      const interactions = await FrictionInteraction.find({ patientId: patient._id });
 
       res.status(200).json({
         success: true,
-        frictionProfile: profile,
-        interactions,
+        records,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
       });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch medical history.' });
+    }
+  }
+
+  /**
+   * GET /api/patients/appointments
+   * Returns appointments for the authenticated patient.
+   */
+  public static async getAppointments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const patientId = patient._id || patient.id;
+      const { status, upcoming } = req.query;
+
+      const filter: any = { patientId };
+      if (status) filter.status = status;
+      if (upcoming === 'true') {
+        filter.appointmentDate = { $gte: new Date().toISOString() };
+        filter.status = { $in: ['scheduled', 'confirmed', 'checked_in'] };
+      }
+
+      const appointments = await Appointment.find(filter)
+        .sort({ appointmentDate: upcoming === 'true' ? 1 : -1 })
+        .limit(50);
+
+      res.status(200).json({ success: true, appointments, count: appointments.length });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch appointments.' });
+    }
+  }
+
+  /**
+   * GET /api/patients (admin only)
+   * Admin endpoint to search patients.
+   */
+  public static async getAllPatients(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({ success: false, message: 'Admin access required.' });
+        return;
+      }
+
+      const page = parseInt(String(req.query.page || '1'));
+      const limit = Math.min(parseInt(String(req.query.limit || '20')), 100);
+      const skip = (page - 1) * limit;
+      const search = String(req.query.search || '');
+
+      let filter: any = {};
+      if (search) {
+        filter = {
+          $or: [
+            { patientCode: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
+          ],
+        };
+      }
+
+      const patients = await Patient.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+      const total = await Patient.countDocuments(filter);
+
+      res.status(200).json({
+        success: true,
+        patients,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch patients.' });
+    }
+  }
+
+  // ── Legacy endpoints preserved for compatibility ─────────────────────────
+
+  public static async getFrictionProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const patientId = patient._id || patient.id;
+      let frictionProfile = patient.activeFrictionProfileId
+        ? await FrictionProfile.findById(patient.activeFrictionProfileId)
+        : await FrictionProfile.findOne({ patientId });
+
+      if (!frictionProfile) {
+        const result = await calculateRealFrictionForPatient(patient);
+        if (result) {
+          frictionProfile = await FrictionProfile.create({ patientId, ...result });
+          await Patient.updateOne({ _id: patientId }, { activeFrictionProfileId: frictionProfile._id || frictionProfile.id });
+        }
+      }
+
+      if (!frictionProfile) {
+        res.status(404).json({ success: false, message: 'Friction profile not yet calculated.' });
+        return;
+      }
+
+      await AuditService.log('FRICTION_PROFILE_VIEWED', 'FrictionProfile', req, {
+        userId,
+        actorRole: 'patient',
+        details: { patientId },
+      });
+
+      res.status(200).json({ success: true, frictionProfile });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Failed to fetch friction profile.' });
     }
   }
 
-  public static async getAccessibilityRisk(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async getCareRisk(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      let patient = await Patient.findOne({ userId: req.user?._id });
-      if (!patient) {
-        patient = await Patient.findOne({});
-      }
-      if (!patient) {
-        res.status(404).json({ success: false, message: 'Patient not found.' });
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
         return;
       }
 
-      let risk = await CareRisk.findOne({ patientId: patient._id }).sort({ createdAt: -1 });
-
-      if (!risk) {
-        const pObj = typeof patient.toObject === 'function' ? patient.toObject() : patient;
-        const frictionCalc = await calculateRealFrictionForPatient(pObj);
-        const riskCalc = RiskEngine.evaluate(frictionCalc);
-        risk = await CareRisk.create({
-          patientId: patient._id,
-          ...riskCalc,
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        careRisk: risk,
-      });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message || 'Failed to fetch risk.' });
-    }
-  }
-
-  public static async getCareJourney(req: AuthenticatedRequest, res: Response): Promise<void> {
-    try {
-      let patient = await Patient.findOne({ userId: req.user?._id });
+      const patient = await Patient.findOne({ userId });
       if (!patient) {
-        patient = await Patient.findOne({});
-      }
-      if (!patient) {
-        res.status(404).json({ success: false, message: 'Patient not found.' });
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
         return;
       }
 
-      let journey = await CareJourney.findOne({ patientId: patient._id }).sort({ createdAt: -1 });
+      const patientId = patient._id || patient.id;
+      const careRisk = await CareRisk.findOne({ patientId });
 
-      if (!journey) {
-        // Initialize 9 standard stages
-        const stages = [
-          {
-            stageName: 'Medical Need',
-            order: 1,
-            status: 'COMPLETED',
-            frictionLevel: 'LOW',
-            observedBarrier: 'Symptom recognized by household',
-          },
-          {
-            stageName: 'Hospital Search',
-            order: 2,
-            status: 'COMPLETED',
-            frictionLevel: 'LOW',
-            observedBarrier: 'Facility identified via PFIS',
-          },
-          {
-            stageName: 'Travel',
-            order: 3,
-            status: patient.transportAvailability === 'none' ? 'AT_RISK' : 'IN_PROGRESS',
-            frictionLevel: patient.transportAvailability === 'none' ? 'CRITICAL' : 'MEDIUM',
-            observedBarrier: '35 km transit across rural roads',
-            mitigationSuggestion: 'Community Health Shuttle voucher',
-          },
-          {
-            stageName: 'Transport',
-            order: 4,
-            status: 'PENDING',
-            frictionLevel: 'HIGH',
-            observedBarrier: 'Shared auto timetable irregularity',
-          },
-          {
-            stageName: 'Appointment',
-            order: 5,
-            status: 'PENDING',
-            frictionLevel: 'MEDIUM',
-            observedBarrier: 'OPD queue token wait time',
-          },
-          {
-            stageName: 'Hospital Visit',
-            order: 6,
-            status: 'PENDING',
-            frictionLevel: 'LOW',
-            observedBarrier: 'Registration desk verification',
-          },
-          {
-            stageName: 'Service',
-            order: 7,
-            status: 'PENDING',
-            frictionLevel: 'MEDIUM',
-            observedBarrier: 'Diagnostic test routing',
-          },
-          {
-            stageName: 'Treatment',
-            order: 8,
-            status: 'PENDING',
-            frictionLevel: 'LOW',
-            observedBarrier: 'Doctor consultation & prescription',
-          },
-          {
-            stageName: 'Follow-up',
-            order: 9,
-            status: 'PENDING',
-            frictionLevel: 'HIGH',
-            observedBarrier: 'Repeat 30-day travel fatigue',
-          },
-        ];
-
-        journey = await CareJourney.create({
-          patientId: patient._id,
-          stages: stages as any,
-          currentStageIndex: 2,
-          overallJourneyHealth: 'SLIGHT_FRICTION',
-        });
+      if (!careRisk) {
+        res.status(404).json({ success: false, message: 'Care risk assessment not yet available.' });
+        return;
       }
 
-      res.status(200).json({
-        success: true,
-        careJourney: journey,
-      });
+      res.status(200).json({ success: true, careRisk });
     } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message || 'Failed to fetch journey.' });
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch care risk.' });
     }
   }
+
+  public static async getCareJourneys(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const patientId = patient._id || patient.id;
+      const journeys = await CareJourney.find({ patientId }).sort({ createdAt: -1 });
+
+      res.status(200).json({ success: true, journeys });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch care journeys.' });
+    }
+  }
+
+  public static async getDocuments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const { PatientDocument } = await import('../models/PatientDocument.js');
+      const docs = await PatientDocument.find({ patientId: patient._id || patient.id }).sort({ createdAt: -1 });
+
+      res.status(200).json({ success: true, documents: docs });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch documents.' });
+    }
+  }
+
+  public static async logFrictionInteraction(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const { barrierType, severity, contextNote, location } = req.body;
+      if (!barrierType) {
+        res.status(400).json({ success: false, message: 'barrierType is required.' });
+        return;
+      }
+
+      const interaction = await FrictionInteraction.create({
+        patientId: patient._id || patient.id,
+        barrierType,
+        severity: severity || 'moderate',
+        contextNote,
+        location,
+        reportedAt: new Date().toISOString(),
+      });
+
+      res.status(201).json({ success: true, message: 'Friction interaction logged.', interaction });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to log interaction.' });
+    }
+  }
+
+  public static async getInteractions(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Authentication required.' });
+        return;
+      }
+
+      const patient = await Patient.findOne({ userId });
+      if (!patient) {
+        res.status(404).json({ success: false, message: 'Patient profile not found.' });
+        return;
+      }
+
+      const interactions = await FrictionInteraction.find({ patientId: patient._id || patient.id })
+        .sort({ createdAt: -1 })
+        .limit(50);
+
+      res.status(200).json({ success: true, interactions });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch interactions.' });
+    }
+  }
+
+  // Aliases for route compatibility
+  public static getAccessibilityRisk = PatientController.getCareRisk;
+  public static getCareJourney = PatientController.getCareJourneys;
 }

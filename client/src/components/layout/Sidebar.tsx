@@ -19,6 +19,13 @@ import {
   Layers,
   Settings,
   CheckCircle2,
+  Calendar,
+  FileText,
+  Pill,
+  Bell,
+  Activity,
+  Home,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -31,11 +38,13 @@ export const Sidebar: React.FC = () => {
 
   const patientLinks = [
     { name: t('nav.dashboard', 'Overview Hub'), path: '/patient/dashboard', icon: LayoutDashboard },
-    { name: 'Digital Twin Simulator', path: '/patient/digital-twin', icon: Sparkles },
+    { name: 'Appointments & Tokens', path: '/patient/appointments', icon: Calendar },
+    { name: 'Medical History & Rx', path: '/patient/medical-history', icon: FileText },
     { name: 'Live Teleconsultation', path: '/patient/teleconsult', icon: Layers },
-    { name: t('nav.hospitals', 'Find Nearby PHCs'), path: '/patient/hospitals', icon: MapPin },
+    { name: t('nav.hospitals', 'Find Nearby Facilities'), path: '/patient/hospitals', icon: MapPin },
     { name: t('nav.frictionProfile', 'Friction Fingerprint'), path: '/patient/friction', icon: Sparkles },
     { name: t('nav.accessibilityRisk', 'Accessibility Risk'), path: '/patient/risk', icon: ShieldAlert },
+    { name: 'Digital Twin Simulator', path: '/patient/digital-twin', icon: Cpu },
     { name: t('nav.myRequests', 'Facility Requests'), path: '/patient/requests', icon: ListOrdered },
     { name: t('nav.myDocuments', 'Document Vault'), path: '/patient/documents', icon: FolderLock },
     { name: t('auth.fullName', 'Demographics & ABHA'), path: '/patient/profile', icon: User },
@@ -44,24 +53,28 @@ export const Sidebar: React.FC = () => {
 
   const hospitalLinks = [
     { name: t('nav.dashboard', 'Hospital Overview'), path: '/hospital/dashboard', icon: LayoutDashboard },
-    { name: t('nav.triageQueue', 'Incoming Requests Queue'), path: '/hospital/requests', icon: ListOrdered },
-    { name: 'Teleconsultation Desk', path: '/hospital/teleconsult', icon: Layers },
-    { name: t('nav.opdManagement', 'Departments & OPD'), path: '/hospital/departments', icon: Layers },
-    { name: t('nav.hospitalProfile', 'Facility Profile'), path: '/hospital/profile', icon: Building2 },
+    { name: 'Patient Flow & Queue', path: '/hospital/operations', icon: Activity },
+    { name: 'Pharmacy Inventory', path: '/hospital/inventory', icon: Pill },
+    { name: t('nav.triageQueue', 'Incoming Requests'), path: '/hospital/requests', icon: ListOrdered },
     { name: 'Cross-Facility Referrals', path: '/hospital/referrals', icon: GitFork },
-    { name: t('nav.settings', 'Settings & Preferences'), path: '/hospital/settings', icon: Settings },
+    { name: t('nav.opdManagement', 'Departments & OPD'), path: '/hospital/departments', icon: Layers },
+    { name: 'Teleconsultation Desk', path: '/hospital/teleconsult', icon: Layers },
+    { name: t('nav.hospitalProfile', 'Facility Profile'), path: '/hospital/profile', icon: Building2 },
+    { name: 'Operational Alerts', path: '/hospital/notifications', icon: Bell },
   ];
 
   const doctorLinks = [
     { name: 'Consultation Desk', path: '/doctor/dashboard', icon: LayoutDashboard },
-    { name: 'OPD Waiting Queue', path: '/doctor/queue', icon: ListOrdered },
+    { name: "Today's Patient Queue", path: '/doctor/appointments', icon: Calendar },
+    { name: 'Medical Records & Rx', path: '/doctor/medical-records', icon: FileText },
     { name: 'Patient Review', path: '/doctor/patient-review', icon: User },
     { name: 'Referral Transfers', path: '/hospital/referrals', icon: GitFork },
-    { name: 'Doctor Profile & Hours', path: '/doctor/profile', icon: Settings },
+    { name: 'Doctor Profile & Hours', path: '/doctor/profile', icon: User },
   ];
 
   const ashaLinks = [
     { name: 'Field Overview', path: '/asha/dashboard', icon: LayoutDashboard },
+    { name: 'Home Health Visits', path: '/asha/visits', icon: Home },
     { name: 'Triage & Register Wizard', path: '/asha/wizard', icon: Sparkles },
     { name: 'Record Barriers', path: '/asha/barriers', icon: ShieldAlert },
     { name: 'High-Risk Recalls (ANC/UIP)', path: '/asha/recalls', icon: ListOrdered },
@@ -70,6 +83,7 @@ export const Sidebar: React.FC = () => {
 
   const governmentLinks = [
     { name: 'District Macro View', path: '/government/dashboard', icon: LayoutDashboard },
+    { name: 'Facility Performance', path: '/government/facilities', icon: Building2 },
     { name: 'Geospatial Friction Map', path: '/government/friction-map', icon: MapPin },
     { name: 'Care Leakage Funnel', path: '/government/leakage', icon: GitFork },
     { name: 'Population Barriers', path: '/government/barriers', icon: BarChart3 },
@@ -78,6 +92,9 @@ export const Sidebar: React.FC = () => {
 
   const adminLinks = [
     { name: t('nav.dashboard', 'Executive Command Center'), path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'User & Role Management', path: '/admin/users', icon: Users },
+    { name: 'Verification Queue', path: '/admin/verification', icon: ShieldCheck },
+    { name: 'System Telemetry & Health', path: '/admin/system-health', icon: Activity },
     { name: 'Friction Digital Twin', path: '/admin/digital-twin', icon: Sparkles },
     { name: t('nav.whatIfSimulator', 'What-If Simulator'), path: '/admin/simulator', icon: Cpu },
     { name: t('nav.budgetOptimizer', 'Budget Optimizer'), path: '/admin/interventions', icon: Sliders },
@@ -87,7 +104,6 @@ export const Sidebar: React.FC = () => {
     { name: t('nav.patientRegistry', 'Patient Cohort Registry'), path: '/admin/patients', icon: Users },
     { name: t('nav.hospitalRegistry', 'Hospital Registry'), path: '/admin/hospitals', icon: Building2 },
     { name: t('nav.auditLogs', 'Compliance Audit Logs'), path: '/admin/audit-logs', icon: History },
-    { name: t('nav.settings', 'System Configuration'), path: '/admin/settings', icon: Settings },
   ];
 
   let links = patientLinks;
@@ -98,55 +114,31 @@ export const Sidebar: React.FC = () => {
   else if (role === 'admin') links = adminLinks;
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between hidden md:flex shrink-0">
-      <div className="space-y-5">
-        <div>
-          <div className="px-3 pb-2 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              {role.toUpperCase()} WORKSPACE
-            </span>
-            <span className="w-2 h-2 rounded-full bg-teal-500" />
-          </div>
-          <div className="space-y-1">
-            {links.map((link) => {
-              const Icon = link.icon;
-              return (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
-                      isActive
-                        ? 'bg-teal-50 text-teal-800 border border-teal-200/80 shadow-2xs font-bold'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4 shrink-0 text-slate-500 group-hover:text-slate-700" />
-                  <span className="truncate">{link.name}</span>
-                </NavLink>
-              );
-            })}
-          </div>
+    <aside className="w-64 shrink-0 hidden lg:block border-r border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md min-h-[calc(100vh-4rem)]">
+      <div className="p-4 space-y-1">
+        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          Navigation • {role.toUpperCase()}
         </div>
-      </div>
-
-      {/* Non-Clinical Safeguard Card */}
-      <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 leading-snug space-y-1.5 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-bold text-slate-800">
-            <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-            <span>Non-Clinical AI</span>
-          </div>
-          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800">
-            Active
-          </span>
-        </div>
-        <p className="text-[11px] text-slate-500">
-          {t('common.nonClinicalNotice', 'Identifies physical and logistical access barriers. Zero automated medical diagnosis.')}
-        </p>
+        {links.map((link) => {
+          const Icon = link.icon;
+          return (
+            <NavLink
+              key={link.path}
+              to={link.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                  isActive
+                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                }`
+              }
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate">{link.name}</span>
+            </NavLink>
+          );
+        })}
       </div>
     </aside>
   );
 };
-

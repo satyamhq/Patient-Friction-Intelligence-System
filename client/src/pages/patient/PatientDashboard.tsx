@@ -59,32 +59,7 @@ export const PatientDashboard: React.FC = () => {
           setPatient(pRes.patient);
           setActiveRequests(pRes.activeRequests || []);
         } else {
-          // Resilient fallback profile
-          setPatient({
-            _id: 'demo_pat_01',
-            userId: user?.id || 'demo_user',
-            patientCode: 'PAT-1042',
-            age: 38,
-            gender: 'other',
-            preferredLanguage: 'Hindi',
-            transportAvailability: 'moderate',
-            digitalAccessLevel: 'moderate',
-            familySupport: 'moderate',
-            documentationStatus: 'complete',
-            financialAccessibility: 'moderate_budget',
-            appointmentFlexibility: 'flexible',
-            residenceType: 'semi_urban',
-            location: {
-              address: coords.address || 'UniCenter, LPU Campus',
-              city: coords.city || 'Phagwara',
-              state: 'Punjab',
-              pincode: coords.pincode || '144411',
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-              geoJSON: { type: 'Point', coordinates: [coords.longitude, coords.latitude] },
-            },
-            createdAt: new Date().toISOString(),
-          } as any);
+          setPatient(null);
         }
 
         const fRes = await patientService.getFrictionProfile().catch(() => null);
@@ -242,6 +217,24 @@ export const PatientDashboard: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Profile Onboarding Alert */}
+      {!patient && (
+        <div className="bg-gradient-to-r from-teal-500/10 via-cyan-500/10 to-blue-500/10 border border-teal-500/30 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-teal-600" />
+              Complete Your Health & Accessibility Profile
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Set up your profile to receive personalized barrier friction intelligence, OPD queue tokens, and direct hospital connectivity.
+            </p>
+          </div>
+          <Link to="/patient/profile" className="shrink-0">
+            <Button variant="primary">Complete Profile</Button>
+          </Link>
+        </div>
+      )}
 
       {/* 2. Primary 1-Click Patient Healthcare Action Hub */}
       <div className="space-y-3">

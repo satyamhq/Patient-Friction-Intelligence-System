@@ -473,9 +473,9 @@ export const connectDB = async (): Promise<IDatabaseClient> => {
         await Promise.allSettled([
           db.collection('users').createIndex({ email: 1 }, { unique: true }),
           db.collection('users').createIndex({ role: 1 }),
-          db.collection('patients').createIndex({ userId: 1 }),
-          db.collection('patients').createIndex({ patientCode: 1 }),
-          db.collection('patients').createIndex({ abhaNumber: 1 }),
+          db.collection('patient_profiles').createIndex({ userId: 1 }),
+          db.collection('patient_profiles').createIndex({ patientCode: 1 }),
+          db.collection('patient_profiles').createIndex({ abhaNumber: 1 }),
           db.collection('friction_profiles').createIndex({ patientId: 1 }),
           db.collection('care_risks').createIndex({ patientId: 1 }),
           db.collection('care_journeys').createIndex({ patientId: 1, stage: 1 }),
@@ -485,10 +485,38 @@ export const connectDB = async (): Promise<IDatabaseClient> => {
           db.collection('asha_workers').createIndex({ userId: 1 }),
           db.collection('government_officials').createIndex({ userId: 1 }),
           db.collection('audit_logs').createIndex({ userId: 1, createdAt: -1 }),
+          // New model indexes
+          db.collection('appointments').createIndex({ patientId: 1, appointmentDate: -1 }),
+          db.collection('appointments').createIndex({ doctorId: 1, appointmentDate: 1 }),
+          db.collection('appointments').createIndex({ hospitalId: 1, appointmentDate: 1 }),
+          db.collection('appointments').createIndex({ status: 1 }),
+          db.collection('medical_records').createIndex({ patientId: 1, visitDate: -1 }),
+          db.collection('medical_records').createIndex({ doctorId: 1 }),
+          db.collection('referrals').createIndex({ patientId: 1, createdAt: -1 }),
+          db.collection('referrals').createIndex({ referralCode: 1 }, { unique: true }),
+          db.collection('referrals').createIndex({ status: 1 }),
+          db.collection('referrals').createIndex({ receivingFacilityId: 1 }),
+          db.collection('queues').createIndex({ hospitalId: 1, date: 1 }),
+          db.collection('queues').createIndex({ doctorId: 1, date: 1 }),
+          db.collection('medicine_inventory').createIndex({ hospitalId: 1 }),
+          db.collection('medicine_inventory').createIndex({ stockStatus: 1 }),
+          db.collection('health_visits').createIndex({ ashaWorkerId: 1, visitDate: -1 }),
+          db.collection('health_visits').createIndex({ patientId: 1 }),
+          db.collection('health_visits').createIndex({ syncStatus: 1 }),
+          db.collection('doctor_schedules').createIndex({ doctorId: 1 }),
         ]);
       } catch {}
 
       dbClient = new MongoDBDriver(client, db);
+
+      // Run platform facility seed (idempotent — won't re-seed if data exists)
+      try {
+        const { runMongoPlatformSeed } = await import('../seed/seedMongoDB.js');
+        await runMongoPlatformSeed();
+      } catch (seedErr: any) {
+        console.warn('[Seed] Platform seed encountered an issue:', seedErr.message);
+      }
+
       return dbClient;
     } catch (err: any) {
       console.warn(`[PFIS Database Notice] MongoDB Atlas connection bypassed (${err.message}). Falling back down database selection chain.`);

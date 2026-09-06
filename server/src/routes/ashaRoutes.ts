@@ -16,4 +16,8 @@ router.post('/barriers', AshaController.recordBarriers);
 router.get('/recalls', AshaController.getRecallTasks);
 router.post('/recall/complete', AshaController.completeRecallTask);
 
+// Health Visits
+router.post('/visits', AshaController.createHealthVisit);
+router.get('/visits', AshaController.getHealthVisits);
+
 export default router;

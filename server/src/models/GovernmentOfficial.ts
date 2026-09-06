@@ -11,9 +11,20 @@ export interface IGovernmentOfficial {
   department: string;
   jurisdictionLevel: 'DISTRICT' | 'STATE' | 'NATIONAL';
   district?: string;
+  jurisdictionDistricts?: string[];
   state: string;
   officeAddress?: string;
   clearanceLevel?: string;
+  // New fields
+  verificationStatus?: 'pending' | 'verified' | 'rejected' | 'suspended';
+  verificationNotes?: string;
+  verifiedAt?: string | Date;
+  verifiedBy?: string;
+  isProfileComplete?: boolean;
+  employeeId?: string;
+  ministryOrDept?: string;
+  authorizedReports?: string[];
+  profileImageUrl?: string;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   save?: () => Promise<any>;

@@ -21,6 +21,8 @@ import abhaRoutes from './abhaRoutes.js';
 import doctorRoutes from './doctorRoutes.js';
 import ashaRoutes from './ashaRoutes.js';
 import governmentRoutes from './governmentRoutes.js';
+import appointmentRoutes from './appointmentRoutes.js';
+import medicalRecordRoutes from './medicalRecordRoutes.js';
 
 const router = Router();
 
@@ -47,5 +49,7 @@ router.use('/abha', abhaRoutes);
 router.use('/doctor', doctorRoutes);
 router.use('/asha', ashaRoutes);
 router.use('/government', governmentRoutes);
+router.use('/appointments', appointmentRoutes);
+router.use('/medical-records', medicalRecordRoutes);
 
 export default router;

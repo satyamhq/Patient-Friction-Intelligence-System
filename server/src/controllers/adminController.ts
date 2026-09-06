@@ -9,6 +9,13 @@ import { CareRisk } from '../models/CareRisk.js';
 import { CareLeakage } from '../models/CareLeakage.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { User } from '../models/User.js';
+import { Doctor } from '../models/Doctor.js';
+import { AshaWorker } from '../models/AshaWorker.js';
+import { GovernmentOfficial } from '../models/GovernmentOfficial.js';
+import { Appointment } from '../models/Appointment.js';
+import { MedicalRecord } from '../models/MedicalRecord.js';
+import { Referral } from '../models/Referral.js';
+import { getDB } from '../database/db.js';
 import { AuditService } from '../services/auditService.js';
 import { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 
@@ -28,7 +35,7 @@ export class AdminController {
       );
       const totalFrictionScore = frictionProfiles.reduce((sum: number, p: any) => sum + (p.overallFrictionScore || 0), 0);
       const avgFriction =
-        frictionProfiles.length > 0 ? Math.round(totalFrictionScore / frictionProfiles.length) : 58;
+        frictionProfiles.length > 0 ? Math.round(totalFrictionScore / frictionProfiles.length) : 0;
 
       const highRiskCount = await CareRisk.countDocuments({
         riskCategory: { $in: ['HIGH', 'CRITICAL'] },
@@ -698,6 +705,283 @@ export class AdminController {
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Failed to fetch audit logs.' });
+    }
+  }
+
+  /**
+   * User Management: List all registered users
+   */
+  public static async getAllUsers(req: Request, res: Response): Promise<void> {
+    try {
+      const { role, status, search } = req.query;
+      let users = await User.find();
+
+      if (role) {
+        users = users.filter((u: any) => u.role === role);
+      }
+      if (status) {
+        users = users.filter((u: any) => (status === 'active' ? u.isActive !== false : u.isActive === false));
+      }
+      if (search) {
+        const q = String(search).toLowerCase();
+        users = users.filter(
+          (u: any) =>
+            (u.name && u.name.toLowerCase().includes(q)) ||
+            (u.email && u.email.toLowerCase().includes(q)) ||
+            (u.phone && u.phone.includes(q))
+        );
+      }
+
+      const safeUsers = users.map((u: any) => ({
+        id: u.id || u._id,
+        _id: u._id || u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+        isActive: u.isActive !== false,
+        createdAt: u.createdAt,
+        updatedAt: u.updatedAt,
+      }));
+
+      res.status(200).json({
+        success: true,
+        total: safeUsers.length,
+        users: safeUsers,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch users.' });
+    }
+  }
+
+  /**
+   * User Management: Toggle or set user active status
+   */
+  public static async updateUserStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { isActive, status } = req.body;
+
+      const user = await User.findOne({ $or: [{ id }, { _id: id }] });
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found.' });
+        return;
+      }
+
+      // Safeguard: Cannot deactivate primary system admin accounts
+      const protectedEmails = [
+        'dhirajkumar464748@gmail.com',
+        'satyam31sk@gmail.com',
+        'admin@pfis.org',
+        'admin@pfis.gov.in',
+        'admin@gmail.com',
+      ];
+      if (protectedEmails.includes(user.email.toLowerCase())) {
+        res.status(403).json({ success: false, message: 'Primary administrator accounts cannot be deactivated.' });
+        return;
+      }
+
+      const newActive = isActive !== undefined ? !!isActive : status === 'active';
+      await User.findByIdAndUpdate(user.id || user._id, { isActive: newActive, updatedAt: new Date().toISOString() });
+
+      await AuditService.log('USER_STATUS_UPDATED', 'User', req, {
+        userId: req.user?._id,
+        actorRole: 'admin',
+        details: { targetUserId: user.id || user._id, isActive: newActive },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `User ${newActive ? 'activated' : 'deactivated'} successfully.`,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to update user status.' });
+    }
+  }
+
+  /**
+   * User Management: Change user role
+   */
+  public static async changeUserRole(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+
+      const validRoles = ['patient', 'doctor', 'hospital', 'asha', 'government', 'admin'];
+      if (!validRoles.includes(role)) {
+        res.status(400).json({ success: false, message: `Invalid role: ${role}` });
+        return;
+      }
+
+      const user = await User.findOne({ $or: [{ id }, { _id: id }] });
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found.' });
+        return;
+      }
+
+      const protectedEmails = [
+        'dhirajkumar464748@gmail.com',
+        'satyam31sk@gmail.com',
+        'admin@pfis.org',
+        'admin@pfis.gov.in',
+        'admin@gmail.com',
+      ];
+      if (protectedEmails.includes(user.email.toLowerCase()) && role !== 'admin') {
+        res.status(403).json({ success: false, message: 'Cannot demote primary administrator accounts.' });
+        return;
+      }
+
+      await User.findByIdAndUpdate(user.id || user._id, { role, updatedAt: new Date().toISOString() });
+
+      await AuditService.log('USER_ROLE_CHANGED', 'User', req, {
+        userId: req.user?._id,
+        actorRole: 'admin',
+        details: { targetUserId: user.id || user._id, previousRole: user.role, newRole: role },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `User role changed to ${role} successfully.`,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to change user role.' });
+    }
+  }
+
+  /**
+   * Verification Queue: Pending professional and facility verifications
+   */
+  public static async getVerificationQueue(req: Request, res: Response): Promise<void> {
+    try {
+      const [doctors, hospitals, ashas, officials] = await Promise.all([
+        Doctor.find({ verificationStatus: { $in: ['pending', 'unverified', null] } }),
+        Hospital.find({ isVerified: false }),
+        AshaWorker.find({ verificationStatus: { $in: ['pending', 'unverified', null] } }),
+        GovernmentOfficial.find({ verificationStatus: { $in: ['pending', 'unverified', null] } }),
+      ]);
+
+      res.status(200).json({
+        success: true,
+        totalPending: doctors.length + hospitals.length + ashas.length + officials.length,
+        queue: {
+          doctors: doctors.map((d: any) => ({ ...d, id: d.id || d._id, entityType: 'doctor' })),
+          hospitals: hospitals.map((h: any) => ({ ...h, id: h.id || h._id, entityType: 'hospital' })),
+          ashaWorkers: ashas.map((a: any) => ({ ...a, id: a.id || a._id, entityType: 'asha' })),
+          governmentOfficials: officials.map((g: any) => ({ ...g, id: g.id || g._id, entityType: 'government' })),
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch verification queue.' });
+    }
+  }
+
+  /**
+   * Verification: Approve or reject entity
+   */
+  public static async verifyEntity(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { entityType, id } = req.params;
+      const { action } = req.body; // 'approve' or 'reject'
+
+      const isApprove = action === 'approve';
+      const now = new Date().toISOString();
+
+      if (entityType === 'doctor') {
+        await Doctor.findByIdAndUpdate(id, {
+          verificationStatus: isApprove ? 'verified' : 'rejected',
+          isProfileComplete: true,
+          updatedAt: now,
+        });
+      } else if (entityType === 'hospital') {
+        await Hospital.findByIdAndUpdate(id, {
+          isVerified: isApprove,
+          updatedAt: now,
+        });
+      } else if (entityType === 'asha') {
+        await AshaWorker.findByIdAndUpdate(id, {
+          verificationStatus: isApprove ? 'verified' : 'rejected',
+          isProfileComplete: true,
+          updatedAt: now,
+        });
+      } else if (entityType === 'government') {
+        await GovernmentOfficial.findByIdAndUpdate(id, {
+          verificationStatus: isApprove ? 'verified' : 'rejected',
+          isProfileComplete: true,
+          updatedAt: now,
+        });
+      } else {
+        res.status(400).json({ success: false, message: 'Invalid entityType.' });
+        return;
+      }
+
+      await AuditService.log('ENTITY_VERIFICATION_DECISION', entityType, req, {
+        userId: req.user?._id,
+        actorRole: 'admin',
+        details: { entityType, entityId: id, action },
+      });
+
+      res.status(200).json({
+        success: true,
+        message: `${entityType} successfully ${isApprove ? 'verified and approved' : 'rejected'}.`,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to process verification.' });
+    }
+  }
+
+  /**
+   * System Health: Live platform metrics, DB status, and collection counts
+   */
+  public static async getSystemHealth(req: Request, res: Response): Promise<void> {
+    try {
+      const db = getDB();
+      const dbType = db.getType();
+
+      const [
+        patientCount,
+        hospitalCount,
+        doctorCount,
+        appointmentCount,
+        recordCount,
+        referralCount,
+        userCount,
+      ] = await Promise.all([
+        Patient.countDocuments(),
+        Hospital.countDocuments(),
+        Doctor.countDocuments(),
+        Appointment.countDocuments(),
+        MedicalRecord.countDocuments(),
+        Referral.countDocuments(),
+        User.countDocuments(),
+      ]);
+
+      const mem = process.memoryUsage();
+
+      res.status(200).json({
+        success: true,
+        system: {
+          status: 'HEALTHY',
+          uptimeSeconds: Math.round(process.uptime()),
+          nodeVersion: process.version,
+          platform: process.platform,
+          memoryUsageMb: Math.round(mem.heapUsed / 1024 / 1024),
+          database: {
+            type: dbType,
+            status: 'CONNECTED',
+          },
+          counts: {
+            users: userCount,
+            patients: patientCount,
+            hospitals: hospitalCount,
+            doctors: doctorCount,
+            appointments: appointmentCount,
+            medicalRecords: recordCount,
+            referrals: referralCount,
+          },
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch system health.' });
     }
   }
 }

@@ -43,13 +43,13 @@ export const AdminDashboard: React.FC = () => {
           setStats(statsRes.stats);
         } else {
           setStats({
-            totalPatients: 2840,
-            totalHospitals: 42,
-            avgAccessibilityScore: 74,
-            careCompletionRate: 81,
-            criticalRiskCount: 68,
-            highRiskCount: 312,
-            activeRequestsCount: 145,
+            totalPatients: 0,
+            totalHospitals: 0,
+            avgAccessibilityScore: 0,
+            careCompletionRate: 0,
+            criticalRiskCount: 0,
+            highRiskCount: 0,
+            activeRequestsCount: 0,
           });
         }
 

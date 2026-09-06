@@ -5,6 +5,7 @@ import { Patient } from '../models/Patient.js';
 import { FrictionProfile } from '../models/FrictionProfile.js';
 import { CareRisk } from '../models/CareRisk.js';
 import { CareJourney } from '../models/CareJourney.js';
+import { HealthVisit } from '../models/HealthVisit.js';
 import { FrictionEngine } from '../intelligence/friction/frictionEngine.js';
 import { RiskEngine } from '../intelligence/risk/riskEngine.js';
 import { AuditService } from '../services/auditService.js';
@@ -19,20 +20,22 @@ export class AshaController {
       if (!worker) {
         worker = await AshaWorker.create({
           userId,
-          workerId: `ASHA-PB-${Math.floor(1000 + Math.random() * 9000)}`,
-          name: req.user?.name || 'Sunita Devi (Frontline ASHA)',
-          email: req.user?.email || 'asha@pfis.gov.in',
-          phone: req.user?.phone || '9876501234',
-          assignedVillage: 'Khera Village (Block 3)',
-          assignedWard: 'Ward 4 & 5',
-          district: 'Kapurthala',
-          state: 'Punjab',
-          primaryHealthCenter: 'PHC Chaheru',
-          communityPopulation: 1450,
-          assignedPatientsCount: 184,
-          activeCases: 19,
-          languagesSpoken: ['Punjabi', 'Hindi'],
+          workerId: `ASHA-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: req.user?.name || 'Frontline Health Worker',
+          email: req.user?.email || '',
+          phone: req.user?.phone || '',
+          assignedVillage: '',
+          assignedWard: '',
+          district: '',
+          state: '',
+          primaryHealthCenter: '',
+          communityPopulation: 0,
+          assignedPatientsCount: 0,
+          activeCases: 0,
+          languagesSpoken: ['Hindi'],
           isFieldActive: true,
+          verificationStatus: 'pending',
+          isProfileComplete: false,
         });
       }
 
@@ -315,6 +318,105 @@ export class AshaController {
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message || 'Failed to complete recall task' });
+    }
+  }
+
+  /**
+   * Log a frontline health visit (offline capable)
+   */
+  public static async createHealthVisit(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      const worker = await AshaWorker.findOne({ userId });
+      const ashaWorkerId = worker ? worker.id || worker._id : userId;
+
+      const {
+        patientId,
+        visitDate,
+        visitType = 'routine_home_visit',
+        visitLocation = 'Household',
+        householdId,
+        findings,
+        actionsPerformed = [],
+        medicinesProvided = [],
+        educationProvided = [],
+        referralRequired = false,
+        referralReason,
+        referralUrgency = 'routine',
+        followUpRequired = false,
+        nextVisitDate,
+        followUpNotes,
+        generalNotes,
+      } = req.body;
+
+      if (!patientId) {
+        res.status(400).json({ success: false, message: 'patientId is required for health visit.' });
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const visit = await HealthVisit.create({
+        ashaWorkerId,
+        patientId,
+        visitDate: visitDate || now.split('T')[0],
+        visitType,
+        visitLocation,
+        householdId,
+        findings: findings || {},
+        actionsPerformed: Array.isArray(actionsPerformed) ? actionsPerformed : [],
+        medicinesProvided: Array.isArray(medicinesProvided) ? medicinesProvided : [],
+        educationProvided: Array.isArray(educationProvided) ? educationProvided : [],
+        referralRequired: !!referralRequired,
+        referralReason,
+        referralUrgency,
+        followUpRequired: !!followUpRequired,
+        nextVisitDate: nextVisitDate || null,
+        followUpNotes,
+        generalNotes,
+        syncStatus: 'synced',
+        syncedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await AuditService.log('HEALTH_VISIT_LOGGED', 'HealthVisit', req, {
+        userId,
+        actorRole: 'asha',
+        details: { visitId: visit.id || visit._id, patientId, visitType },
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Frontline health visit recorded successfully.',
+        visit,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to record health visit.' });
+    }
+  }
+
+  /**
+   * Get health visits logged by this ASHA worker
+   */
+  public static async getHealthVisits(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id || req.user?.id;
+      const worker = await AshaWorker.findOne({ userId });
+      const ashaWorkerId = worker ? worker.id || worker._id : userId;
+
+      const { patientId } = req.query;
+      let filter: any = { ashaWorkerId };
+      if (patientId) filter.patientId = patientId;
+
+      const visits = await HealthVisit.find(filter).sort({ visitDate: -1, createdAt: -1 });
+
+      res.status(200).json({
+        success: true,
+        count: visits.length,
+        visits,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch health visits.' });
     }
   }
 }
