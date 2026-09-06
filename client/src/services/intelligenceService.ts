@@ -50,6 +50,41 @@ export const intelligenceService = {
     return res.data;
   },
 
+  async getCohortStats(): Promise<{
+    success: boolean;
+    dataSource: string;
+    totalSyntheticPatients: number;
+    averageBaselineCompletionProbability: number;
+    averageFrictionScore: number;
+    topBarriers: { name: string; count: number; percent: number }[];
+  }> {
+    const res = await api.get('/simulation/cohort-stats');
+    return res.data;
+  },
+
+  async getCohortPatients(params?: { page?: number; limit?: number; search?: string }): Promise<{
+    success: boolean;
+    total: number;
+    page: number;
+    limit: number;
+    patients: any[];
+  }> {
+    const res = await api.get('/simulation/patients', { params });
+    return res.data;
+  },
+
+  async getPatientDigitalTwin(id: string): Promise<{
+    success: boolean;
+    patient: any;
+    frictionProfile?: any;
+    careRisk?: any;
+    appointments?: any[];
+    journeys?: any[];
+  }> {
+    const res = await api.get(`/simulation/patients/${id}`);
+    return res.data;
+  },
+
   async runSimulation(payload: {
     selectedCodes: string[];
     baselineProbability?: number;
@@ -75,3 +110,4 @@ export const intelligenceService = {
     return res.data;
   },
 };
+

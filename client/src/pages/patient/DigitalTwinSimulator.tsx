@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { patientService } from '../../services/patientService';
+import { intelligenceService } from '../../services/intelligenceService';
 import { Button } from '../../components/common/Button';
 import { CompletionGauge } from '../../components/charts/CompletionGauge';
 import { TTSButton } from '../../components/common/TTSButton';
@@ -43,6 +44,12 @@ export const DigitalTwinSimulator: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
+  // MongoDB Atlas Cohort Integration
+  const [cohortPatients, setCohortPatients] = useState<any[]>([]);
+  const [selectedPatientCode, setSelectedPatientCode] = useState<string>('');
+  const [selectedPatientMeta, setSelectedPatientMeta] = useState<any>(null);
+  const [isLoadingCohort, setIsLoadingCohort] = useState<boolean>(true);
+
   // Patient Profile State for Digital Twin
   const [patientName, setPatientName] = useState('Sunita Devi (Digital Twin)');
   const [distanceKm, setDistanceKm] = useState(65);
@@ -51,6 +58,38 @@ export const DigitalTwinSimulator: React.FC = () => {
   const [familySupport, setFamilySupport] = useState<'none' | 'low' | 'moderate' | 'high'>('low');
   const [wageCommitment, setWageCommitment] = useState<'inflexible_daily_wage' | 'rigid_hours' | 'flexible'>('inflexible_daily_wage');
   const [docReadiness, setDocReadiness] = useState<'incomplete' | 'partial' | 'complete'>('partial');
+
+  const applyPatientProfile = (p: any) => {
+    const code = p.patientCode || p.id;
+    setSelectedPatientCode(code);
+    setSelectedPatientMeta(p);
+    setPatientName(`${p.name} (${code})`);
+    setDistanceKm(p.location?.distanceKm || p.location?.distanceToFacilityKm || 28);
+    setTransportAccess(p.transportAvailability || 'low');
+    setDigitalLiteracy(p.digitalAccessLevel || 'none');
+    setFamilySupport(p.familySupport || 'moderate');
+    setWageCommitment(p.appointmentFlexibility || 'inflexible_daily_wage');
+    setDocReadiness(p.documentationStatus || 'partial');
+  };
+
+  useEffect(() => {
+    const loadMongoDBData = async () => {
+      try {
+        setIsLoadingCohort(true);
+        // Load synthetic patients directly from MongoDB Atlas
+        const res = await intelligenceService.getCohortPatients({ limit: 50 });
+        if (res.success && res.patients && res.patients.length > 0) {
+          setCohortPatients(res.patients);
+          applyPatientProfile(res.patients[0]);
+        }
+      } catch (err) {
+        console.warn('Could not load MongoDB cohort for digital twin:', err);
+      } finally {
+        setIsLoadingCohort(false);
+      }
+    };
+    loadMongoDBData();
+  }, []);
 
   // Active Interventions Toggles
   const [hasTransportShuttle, setHasTransportShuttle] = useState(false);
@@ -284,9 +323,43 @@ export const DigitalTwinSimulator: React.FC = () => {
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                60 Yrs • Rural
+                {selectedPatientMeta ? `${selectedPatientMeta.age} Yrs • ${selectedPatientMeta.gender || 'Patient'}` : '60 Yrs • Rural'}
               </span>
             </div>
+
+            {/* MongoDB Cohort Patient Selector */}
+            {cohortPatients.length > 0 && (
+              <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Simulate MongoDB Patient:
+                  </span>
+                  <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold">1,000 Atlas Records</span>
+                </div>
+                <select
+                  value={selectedPatientCode}
+                  onChange={(e) => {
+                    const found = cohortPatients.find((p) => (p.patientCode || p.id) === e.target.value);
+                    if (found) applyPatientProfile(found);
+                  }}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium focus:ring-1 focus:ring-teal-500"
+                >
+                  {cohortPatients.map((p) => (
+                    <option key={p.patientCode || p.id} value={p.patientCode || p.id}>
+                      {p.patientCode}: {p.name} ({p.age}y, {p.chronicConditions?.[0] || 'OPD'}, {p.location?.city || 'Punjab'})
+                    </option>
+                  ))}
+                </select>
+                {selectedPatientMeta && (
+                  <div className="flex flex-wrap items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-0.5 px-0.5 gap-1">
+                    <span>📍 {selectedPatientMeta.location?.address || selectedPatientMeta.location?.city || 'Punjab'}</span>
+                    <span>💼 {selectedPatientMeta.occupation || 'Daily Wage'} (₹{selectedPatientMeta.dailyWageInr || 450}/day)</span>
+                    <span>🗣️ {selectedPatientMeta.preferredLanguage || 'Punjabi'} ({selectedPatientMeta.preferredDialect || 'Standard'})</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Config Sliders & Selectors */}
             <div className="space-y-3 text-xs">
