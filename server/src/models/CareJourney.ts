@@ -36,4 +36,4 @@ export interface ICareJourney {
   toJSON?: () => any;
 }
 
-export const CareJourney: any = createSQLModel<ICareJourney>('appointments');
+export const CareJourney: any = createSQLModel<ICareJourney>('care_journeys');

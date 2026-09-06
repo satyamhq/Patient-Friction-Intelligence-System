@@ -548,6 +548,27 @@ export function createSQLModel<T = any>(tableName: string) {
 
     static async insertMany(items: any[]): Promise<any[]> {
       if (!Array.isArray(items) || items.length === 0) return [];
+      const db = getDB();
+      if ((db as any).db && typeof (db as any).db.collection === 'function') {
+        const coll = (db as any).db.collection(tableName);
+        const docs = items.map((item) => {
+          const id = item.id || item._id || crypto.randomUUID();
+          const now = new Date().toISOString();
+          const raw: any = {
+            ...item,
+            id,
+            _id: id,
+            createdAt: item.createdAt || now,
+            updatedAt: item.updatedAt || now,
+          };
+          for (const k of Object.keys(raw)) {
+            if (k.startsWith('$')) delete raw[k];
+          }
+          return raw;
+        });
+        await coll.insertMany(docs);
+        return docs.map((d) => wrapModelInstance(tableName, d));
+      }
       const chunkSize = 25;
       const instances: any[] = [];
       for (let i = 0; i < items.length; i += chunkSize) {
@@ -679,6 +700,16 @@ export function createSQLModel<T = any>(tableName: string) {
 
     static async deleteMany(filter: any = {}): Promise<{ deletedCount: number }> {
       const db = getDB();
+      if ((db as any).db && typeof (db as any).db.collection === 'function') {
+        const coll = (db as any).db.collection(tableName);
+        const mongoFilter: any = { ...filter };
+        if (mongoFilter.id && !mongoFilter._id) {
+          mongoFilter.$or = [{ id: mongoFilter.id }, { _id: mongoFilter.id }];
+          delete mongoFilter.id;
+        }
+        const res = await coll.deleteMany(mongoFilter);
+        return { deletedCount: res.deletedCount || 0 };
+      }
       const items = await this.find(filter);
       for (const item of items) {
         await db.query(`DELETE FROM ${tableName} WHERE id = $1`, [item.id || item._id]);
