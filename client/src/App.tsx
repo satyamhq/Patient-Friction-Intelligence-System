@@ -15,7 +15,6 @@ import { MainLayout } from './layouts/MainLayout';
 import { PatientLayout } from './layouts/PatientLayout';
 import { HospitalLayout } from './layouts/HospitalLayout';
 import { AdminLayout } from './layouts/AdminLayout';
-import { AuthLayout } from './layouts/AuthLayout';
 import { DoctorLayout } from './layouts/DoctorLayout';
 import { AshaLayout } from './layouts/AshaLayout';
 import { GovernmentLayout } from './layouts/GovernmentLayout';
@@ -36,12 +35,6 @@ const lazyPage = (importFn: () => Promise<any>, exportName: string): React.Compo
 
 // Public Pages
 const LandingPage = lazyPage(() => import('./pages/LandingPage'), 'LandingPage');
-const Login = lazyPage(() => import('./pages/auth/Login'), 'Login');
-const Register = lazyPage(() => import('./pages/auth/Register'), 'Register');
-const ForgotPassword = lazyPage(() => import('./pages/auth/ForgotPassword'), 'ForgotPassword');
-const ResetPassword = lazyPage(() => import('./pages/auth/ResetPassword'), 'ResetPassword');
-const GoogleCallback = lazyPage(() => import('./pages/auth/GoogleCallback'), 'GoogleCallback');
-const OnboardingModal = lazyPage(() => import('./pages/auth/OnboardingModal'), 'OnboardingModal');
 const About = lazyPage(() => import('./pages/public/About'), 'About');
 const Contact = lazyPage(() => import('./pages/public/Contact'), 'Contact');
 const NotFound = lazyPage(() => import('./pages/public/NotFound'), 'NotFound');
@@ -156,18 +149,16 @@ export const App: React.FC = () => {
                         <Route path="/hospitals" element={<Navigate to="/patient/hospitals" replace />} />
                       </Route>
 
-                      {/* Auth Layout */}
-                      <Route element={<AuthLayout />}>
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/auth/login" element={<Navigate to="/login" replace />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/auth/register" element={<Navigate to="/register" replace />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/auth/reset-password" element={<ResetPassword />} />
-                      </Route>
-                      <Route path="/auth/google/callback" element={<GoogleCallback />} />
+                      {/* Zero-Login Open-Access Fallbacks */}
+                      <Route path="/login" element={<Navigate to="/portals" replace />} />
+                      <Route path="/auth/login" element={<Navigate to="/portals" replace />} />
+                      <Route path="/register" element={<Navigate to="/portals" replace />} />
+                      <Route path="/auth/register" element={<Navigate to="/portals" replace />} />
+                      <Route path="/forgot-password" element={<Navigate to="/portals" replace />} />
+                      <Route path="/auth/forgot-password" element={<Navigate to="/portals" replace />} />
+                      <Route path="/reset-password" element={<Navigate to="/portals" replace />} />
+                      <Route path="/auth/reset-password" element={<Navigate to="/portals" replace />} />
+                      <Route path="/auth/google/callback" element={<Navigate to="/portals" replace />} />
 
                       {/* Patient Portal */}
                       <Route path="/patient" element={<PatientLayout />}>
@@ -239,7 +230,7 @@ export const App: React.FC = () => {
                       </Route>
 
                       {/* Onboarding Route */}
-                      <Route path="/onboarding" element={<OnboardingModal isOpen={true} />} />
+                      <Route path="/onboarding" element={<Navigate to="/portals" replace />} />
 
                       {/* Admin Intelligence Suite */}
                       <Route path="/admin" element={<AdminLayout />}>

@@ -540,106 +540,40 @@ export const Navbar: React.FC = () => {
                 </div>
               )}
 
-              {/* User Profile Pill or Sign In Button (Desktop) */}
-              {isAuthenticated && user ? (
-                <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
-                  <Link
-                    to={
-                      user.role === 'patient'
-                        ? '/patient/settings'
-                        : user.role === 'hospital'
-                        ? '/hospital/settings'
-                        : user.role === 'doctor'
-                        ? '/doctor/profile'
-                        : user.role === 'asha'
-                        ? '/asha/profile'
-                        : user.role === 'government'
-                        ? '/government/dashboard'
-                        : '/admin/settings'
-                    }
-                    title={t('nav.settings', 'Settings & Preferences')}
-                    className="p-1.5 text-slate-500 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition-colors"
-                  >
-                    <SettingsIcon className="w-4 h-4" />
-                  </Link>
+              {/* Open-Source Platform Controls (Desktop) */}
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://github.com/satyamhq/Patient-Friction-Intelligence-System"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="View GitHub Repository"
+                >
+                  <ExternalLink className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                </a>
 
-                  <Link
-                    to={
-                      user.role === 'patient'
-                        ? '/patient/profile'
-                        : user.role === 'hospital'
-                        ? '/hospital/profile'
-                        : user.role === 'doctor'
-                        ? '/doctor/profile'
-                        : user.role === 'asha'
-                        ? '/asha/profile'
-                        : user.role === 'government'
-                        ? '/government/dashboard'
-                        : '/admin/dashboard'
-                    }
-                    className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-slate-100 text-left transition-colors border border-slate-200/60 bg-slate-50/50"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-                      {user.role === 'hospital' ? (
-                        <Building2 className="w-3.5 h-3.5 text-white" />
-                      ) : user.role === 'admin' ? (
-                        <Shield className="w-3.5 h-3.5 text-white" />
-                      ) : user.role === 'doctor' ? (
-                        <Stethoscope className="w-3.5 h-3.5 text-white" />
-                      ) : user.role === 'asha' ? (
-                        <UsersIcon className="w-3.5 h-3.5 text-white" />
-                      ) : user.role === 'government' ? (
-                        <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                      ) : (
-                        <UserIcon className="w-3.5 h-3.5 text-white" />
-                      )}
-                    </div>
-                    <div className="hidden lg:flex flex-col">
-                      <span className="text-xs font-bold text-slate-900 leading-tight">
-                        {user.name?.split(' ')[0]}
-                      </span>
-                      <span className="text-[9px] font-bold text-teal-700 uppercase">
-                        {user.role}
-                      </span>
-                    </div>
-                  </Link>
+                <Link
+                  to="/demo/simulator"
+                  className="text-xs font-semibold text-slate-600 hover:text-teal-700 dark:text-slate-300 dark:hover:text-teal-400 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Simulator
+                </Link>
 
-                  <button
-                    onClick={handleLogout}
-                    title={t('nav.logout', 'Sign Out')}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <a
-                    href="https://github.com/satyamhq/Patient-Friction-Intelligence-System"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
-                    title="View GitHub Repository"
-                  >
-                    <ExternalLink className="w-4 h-4 text-slate-600" />
-                  </a>
+                <Link
+                  to="/portals"
+                  className="text-xs font-semibold text-slate-600 hover:text-teal-700 dark:text-slate-300 dark:hover:text-teal-400 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Portals
+                </Link>
 
-                  <Link
-                    to="/portals"
-                    className="text-xs font-semibold text-slate-600 hover:text-teal-700 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    Portals
-                  </Link>
-
-                  <Link
-                    to="/demo"
-                    className="text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
-                  >
-                    <Activity className="w-3.5 h-3.5" />
-                    <span>Open Demo</span>
-                  </Link>
-                </div>
-              )}
+                <Link
+                  to="/demo"
+                  className="text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>Live Demo</span>
+                </Link>
+              </div>
             </div>
 
             {/* Mobile Hamburger Toggle Button */}
@@ -703,83 +637,25 @@ export const Navbar: React.FC = () => {
 
             {/* Scrollable Drawer Body */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              {/* Profile Card / Auth Section */}
-              {isAuthenticated && user ? (
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-                      {user.role === 'hospital' ? (
-                        <Building2 className="w-5 h-5 text-white" />
-                      ) : user.role === 'admin' ? (
-                        <Shield className="w-5 h-5 text-white" />
-                      ) : (
-                        <UserIcon className="w-5 h-5 text-white" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-900 truncate">
-                        {user.name}
-                      </p>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">
-                          {user.role}
-                        </span>
-                        <span className="text-[11px] text-slate-500 truncate">
-                          {user.email}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-slate-200 flex gap-2">
-                    <Link
-                      to={
-                        user.role === 'patient'
-                          ? '/patient/profile'
-                          : user.role === 'hospital'
-                          ? '/hospital/profile'
-                          : '/admin/dashboard'
-                      }
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex-1 text-center py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
-                    >
-                      View Profile
-                    </Link>
-                    <Link
-                      to={
-                        user.role === 'patient'
-                          ? '/patient/settings'
-                          : user.role === 'hospital'
-                          ? '/hospital/settings'
-                          : '/admin/settings'
-                      }
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 flex items-center justify-center"
-                      title="Settings"
-                    >
-                      <SettingsIcon className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Link
-                    to="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-xs"
-                  >
-                    <UserIcon className="w-4 h-4 mr-2 text-teal-300" />
-                    Sign In to Portal
-                  </Link>
-                  <Link
-                    to="/demo"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-xs"
-                  >
-                    <Activity className="w-4 h-4 mr-2 text-white" />
-                    Interactive Simulator Demo
-                  </Link>
-                </div>
-              )}
+              {/* Quick Actions (Mobile) */}
+              <div className="space-y-2">
+                <Link
+                  to="/portals"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-xs"
+                >
+                  <Layers className="w-4 h-4 mr-2" />
+                  Explore Healthcare Portals
+                </Link>
+                <Link
+                  to="/demo/simulator"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-xs"
+                >
+                  <Cpu className="w-4 h-4 mr-2 text-teal-300" />
+                  What-If Policy Simulator
+                </Link>
+              </div>
 
               {/* Navigation Links Group */}
               <div className="space-y-1 pt-1">

@@ -833,8 +833,8 @@ export const LandingPage: React.FC = () => {
                 For organizations running an operational deployment, dedicated role experiences remain fully supported:
               </p>
             </div>
-            <Link to="/login" className="text-xs font-bold text-teal-700 hover:underline shrink-0">
-              Sign in to Portal →
+            <Link to="/portals" className="text-xs font-bold text-teal-700 hover:underline shrink-0">
+              Explore All Portals →
             </Link>
           </div>
 

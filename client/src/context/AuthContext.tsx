@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-import { authService, LoginResponse } from '../services/authService';
+import { LoginResponse } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -16,214 +16,105 @@ interface AuthContextType {
   setAuthSession: (token: string, user: User, profile?: any) => void;
 }
 
+const DEFAULT_USER: User = {
+  id: 'pfis_open_access_user',
+  name: 'Healthcare Practitioner',
+  email: 'practitioner@pfis.org',
+  role: 'admin',
+  phone: '+91 98765 43210',
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
+  const [user, setUser] = useState<User>(() => {
     try {
       const saved = localStorage.getItem('pfis_auth_user');
-      return saved ? JSON.parse(saved) : null;
+      return saved ? JSON.parse(saved) : DEFAULT_USER;
     } catch {
-      localStorage.removeItem('pfis_auth_user');
-      return null;
+      return DEFAULT_USER;
     }
   });
+
   const [profile, setProfile] = useState<any>(() => {
     try {
       const saved = localStorage.getItem('pfis_auth_profile');
       return saved ? JSON.parse(saved) : null;
     } catch {
-      localStorage.removeItem('pfis_auth_profile');
       return null;
     }
   });
+
   const [token, setToken] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('pfis_auth_token');
+      return localStorage.getItem('pfis_auth_token') || 'pfis_open_access_token';
     } catch {
-      return null;
+      return 'pfis_open_access_token';
     }
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [isLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkSession = async () => {
-      if (token) {
-        // If it's a simulated demo offline session, keep it active
-        if (token.startsWith('demo_offline_token_')) {
-          setIsLoading(false);
-          return;
-        }
+    // Ensure default session in storage for all services
+    localStorage.setItem('pfis_auth_token', token || 'pfis_open_access_token');
+    localStorage.setItem('pfis_auth_user', JSON.stringify(user));
+  }, [token, user]);
 
-        try {
-          const res = await authService.getMe();
-          if (res?.success) {
-            setUser(res.user);
-            setProfile(res.profile);
-            localStorage.setItem('pfis_auth_user', JSON.stringify(res.user));
-            if (res.profile) {
-              localStorage.setItem('pfis_auth_profile', JSON.stringify(res.profile));
-            }
-          }
-        } catch (e) {
-          // If server is unreachable or cold-starting, don't destroy user session immediately if valid user exists
-          console.warn('[AuthContext] Backend session validation failed or server offline.');
-          // Only clear if 401 unauthenticated
-          const is401 = (e as any)?.response?.status === 401;
-          if (is401) {
-            setUser(null);
-            setProfile(null);
-            setToken(null);
-            localStorage.removeItem('pfis_auth_token');
-            localStorage.removeItem('pfis_auth_user');
-            localStorage.removeItem('pfis_auth_profile');
-          }
-        }
-      }
-      setIsLoading(false);
+  const login = async (email: string, _pass: string): Promise<LoginResponse> => {
+    const activeUser: User = {
+      ...DEFAULT_USER,
+      email: email || DEFAULT_USER.email,
     };
-
-    checkSession();
-  }, [token]);
-
-  const login = async (email: string, pass: string): Promise<LoginResponse> => {
-    setIsLoading(true);
-    const cleanEmail = (email || '').toLowerCase().trim();
-
-    try {
-      const res = await authService.login(cleanEmail, pass);
-      if (res && res.success && res.token) {
-        setToken(res.token);
-        setUser(res.user);
-        setProfile(res.profile || null);
-        localStorage.setItem('pfis_auth_token', res.token);
-        localStorage.setItem('pfis_auth_user', JSON.stringify(res.user));
-        if (res.profile) {
-          localStorage.setItem('pfis_auth_profile', JSON.stringify(res.profile));
-        }
-        return res;
-      }
-      throw new Error(res?.message || 'Login failed.');
-    } catch (err: any) {
-      // If backend is unreachable or not yet deployed on Vercel, allow built-in Demo accounts to function seamlessly
-      const isDemoAccount =
-        cleanEmail === 'admin@pfis.org' ||
-        cleanEmail === 'hospital@apollo.org' ||
-        cleanEmail === 'patient@pfis.org';
-
-      if (isDemoAccount) {
-        let demoRole: 'admin' | 'hospital' | 'patient' = 'patient';
-        let demoName = 'Demo Patient';
-        if (cleanEmail === 'admin@pfis.org') {
-          demoRole = 'admin';
-          demoName = 'Platform Administrator';
-        } else if (cleanEmail === 'hospital@apollo.org') {
-          demoRole = 'hospital';
-          demoName = 'Apollo Health Facility';
-        } else {
-          demoRole = 'patient';
-          demoName = 'Aarav Kumar (Patient)';
-        }
-
-        const demoToken = `demo_offline_token_${Date.now()}`;
-        const demoUser: User = {
-          id: `demo_${demoRole}_id`,
-          name: demoName,
-          email: cleanEmail,
-          role: demoRole,
-          phone: '+91 98765 43210',
-        };
-
-        setToken(demoToken);
-        setUser(demoUser);
-        setProfile(null);
-        localStorage.setItem('pfis_auth_token', demoToken);
-        localStorage.setItem('pfis_auth_user', JSON.stringify(demoUser));
-
-        return {
-          success: true,
-          message: 'Offline Demo session active.',
-          token: demoToken,
-          user: demoUser,
-        };
-      }
-
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(activeUser);
+    setToken('pfis_open_access_token');
+    return {
+      success: true,
+      message: 'Authenticated',
+      token: 'pfis_open_access_token',
+      user: activeUser,
+    };
   };
 
-  const loginWithGoogle = async (credential: string, role?: string, profileData?: any): Promise<LoginResponse> => {
-    setIsLoading(true);
-    try {
-      const res = await authService.loginWithGoogle(credential, role, profileData);
-      if (res.success && res.token) {
-        setToken(res.token);
-        setUser(res.user);
-        setProfile(res.profile || null);
-        localStorage.setItem('pfis_auth_token', res.token);
-        localStorage.setItem('pfis_auth_user', JSON.stringify(res.user));
-        if (res.profile) {
-          localStorage.setItem('pfis_auth_profile', JSON.stringify(res.profile));
-        }
-      }
-      return res;
-    } finally {
-      setIsLoading(false);
-    }
+  const loginWithGoogle = async (_credential: string, role?: string): Promise<LoginResponse> => {
+    const activeUser: User = {
+      ...DEFAULT_USER,
+      role: (role as any) || 'admin',
+    };
+    setUser(activeUser);
+    setToken('pfis_open_access_token');
+    return {
+      success: true,
+      message: 'Authenticated',
+      token: 'pfis_open_access_token',
+      user: activeUser,
+    };
   };
 
   const register = async (data: any): Promise<LoginResponse> => {
-    setIsLoading(true);
-    try {
-      const res = await authService.register(data);
-      if (res.success && res.token) {
-        setToken(res.token);
-        setUser(res.user);
-        setProfile(res.profile || null);
-        localStorage.setItem('pfis_auth_token', res.token);
-        localStorage.setItem('pfis_auth_user', JSON.stringify(res.user));
-        if (res.profile) {
-          localStorage.setItem('pfis_auth_profile', JSON.stringify(res.profile));
-        }
-      }
-      return res;
-    } finally {
-      setIsLoading(false);
-    }
+    const activeUser: User = {
+      ...DEFAULT_USER,
+      name: data.name || DEFAULT_USER.name,
+      email: data.email || DEFAULT_USER.email,
+      role: data.role || 'patient',
+    };
+    setUser(activeUser);
+    setToken('pfis_open_access_token');
+    return {
+      success: true,
+      message: 'Registered',
+      token: 'pfis_open_access_token',
+      user: activeUser,
+    };
   };
 
-  const logout = async () => {
-    try {
-      await authService.logout();
-    } catch (e) {
-      console.warn('AuthContext logout error:', e);
-    } finally {
-      setUser(null);
-      setProfile(null);
-      setToken(null);
-      localStorage.removeItem('pfis_auth_token');
-      localStorage.removeItem('pfis_auth_user');
-      localStorage.removeItem('pfis_auth_profile');
-      localStorage.removeItem('pfis_token');
-      localStorage.removeItem('pfis_user');
-      localStorage.removeItem('pfis_profile');
-    }
+  const logout = async (): Promise<void> => {
+    // Reset to default open-access user rather than breaking state
+    setUser(DEFAULT_USER);
   };
 
-  const refreshProfile = async () => {
-    if (token) {
-      const res = await authService.getMe();
-      if (res.success) {
-        setUser(res.user);
-        setProfile(res.profile);
-        localStorage.setItem('pfis_auth_user', JSON.stringify(res.user));
-        if (res.profile) {
-          localStorage.setItem('pfis_auth_profile', JSON.stringify(res.profile));
-        }
-      }
-    }
+  const refreshProfile = async (): Promise<void> => {
+    // No-op for open access
   };
 
   const setAuthSession = (newToken: string, newUser: User, newProfile?: any) => {
@@ -232,9 +123,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(newProfile || null);
     localStorage.setItem('pfis_auth_token', newToken);
     localStorage.setItem('pfis_auth_user', JSON.stringify(newUser));
-    if (newProfile) {
-      localStorage.setItem('pfis_auth_profile', JSON.stringify(newProfile));
-    }
   };
 
   return (
@@ -243,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         profile,
         token,
-        isAuthenticated: !!user && !!token,
+        isAuthenticated: true,
         isLoading,
         login,
         loginWithGoogle,
@@ -258,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleResetSession = () => {
     localStorage.clear();
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   public render() {

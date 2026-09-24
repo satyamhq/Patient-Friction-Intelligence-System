@@ -53,16 +53,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
-      const token = localStorage.getItem('pfis_auth_token');
-      const isLoginRoute = window.location.pathname.includes('/login') || window.location.pathname.includes('/register');
-      // If unauthorized on protected route, clean up local state (unless running offline demo token)
-      if (!isLoginRoute && token && !token.startsWith('demo_offline_token_')) {
-        localStorage.removeItem('pfis_auth_token');
-        localStorage.removeItem('pfis_auth_user');
-        window.location.href = '/login?session_expired=true';
-      }
-    }
+    // Zero-friction open-access: do not disrupt navigation on 401
     return Promise.reject(error);
   }
 );

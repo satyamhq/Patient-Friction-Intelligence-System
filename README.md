@@ -189,7 +189,7 @@ graph TB
 
 ## 👥 Operational Portals Ecosystem
 
-PFIS supports dedicated role-based operational experiences for every healthcare stakeholder:
+> **Zero-Login Open Access**: All operational portals, simulators, and intelligence tools are directly accessible with zero login or signup barriers. Switch between clinical, administrative, and frontline community views instantly.
 
 | Persona | Operational Portal | Key Capabilities |
 |:---|:---|:---|
