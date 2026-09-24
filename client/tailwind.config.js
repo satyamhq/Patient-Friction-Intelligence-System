@@ -37,6 +37,11 @@ export default {
           medium: '#d97706',  // Amber
           high: '#ea580c',    // Orange
           critical: '#e11d48' // Rose
+        },
+        navy: {
+          800: '#111c38',
+          900: '#0b1329',
+          950: '#060a17',
         }
       },
       fontFamily: {

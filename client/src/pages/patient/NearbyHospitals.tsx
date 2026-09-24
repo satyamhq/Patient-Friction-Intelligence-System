@@ -109,7 +109,7 @@ export const NearbyHospitals: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header & Location Bar */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">

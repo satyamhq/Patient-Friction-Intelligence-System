@@ -161,46 +161,47 @@ export const DoctorConsultationDesk: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 pb-20">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center font-bold text-white shadow-md shadow-teal-600/20">
             <Stethoscope className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
               PHC Medical Officer Console (डाॅक्टर कंसल्टेशन डेस्क)
             </h1>
-            <p className="text-xs text-slate-500">
-              Facility: <strong className="text-slate-800 font-semibold">Angara Primary Health Centre (PHC)</strong> • Dr. Alok Verma (MO)
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Facility: <strong className="text-slate-800 dark:text-slate-200 font-semibold">Angara Primary Health Centre (PHC)</strong> • Dr. Alok Verma (MO)
             </p>
           </div>
         </div>
 
         {/* Instant ABHA / QR Lookup */}
-        <div className="flex items-center space-x-2">
-          <div className="relative">
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
             <input
               type="text"
               placeholder="ABHA ID या नाम से खोजें..."
               value={searchAbha}
               onChange={(e) => setSearchAbha(e.target.value)}
-              className="pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs w-64"
+              className="pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs w-full sm:w-64"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           </div>
           <button
             onClick={() => setShowAbhaModal(true)}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 text-xs font-bold transition shadow-2xs"
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-teal-50 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-bold transition shadow-2xs shrink-0"
           >
-            <QrCode className="w-4 h-4 text-teal-600" />
-            <span>QR स्कैन (ABHA)</span>
+            <QrCode className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <span className="hidden sm:inline">QR स्कैन (ABHA)</span>
+            <span className="sm:hidden">QR</span>
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: OPD Queue */}
         <div className="space-y-4">
           <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between">

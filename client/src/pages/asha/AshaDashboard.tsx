@@ -187,17 +187,17 @@ export const AshaDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
+    <div className="space-y-6 pb-12">
       {/* Top Banner: ASHA Identity & Offline-First Status */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-3 shadow-2xs">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-2xl bg-teal-600 flex items-center justify-center font-bold text-white shadow-xs text-sm">
               ASHA
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="font-extrabold text-base text-slate-900 tracking-tight">
+                <h1 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
                   आशा संगिनी साथी (ASHA Frontline)
                 </h1>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 font-bold border border-teal-200">
@@ -205,7 +205,7 @@ export const AshaDashboard: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Frontline Health Worker: <strong className="text-slate-800">Anita Devi</strong> • Hesal Sub-Centre
+                Frontline Health Worker: <strong className="text-slate-800 dark:text-slate-200">Anita Devi</strong> • Hesal Sub-Centre
               </p>
             </div>
           </div>
@@ -236,7 +236,7 @@ export const AshaDashboard: React.FC = () => {
             <button
               onClick={() => syncManager.flushQueue()}
               title="Manual Sync Flush"
-              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition"
+              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition cursor-pointer"
             >
               <RefreshCw
                 className={`w-4 h-4 ${syncStatus.syncState === 'SYNCING' ? 'animate-spin' : ''}`}
@@ -247,7 +247,7 @@ export const AshaDashboard: React.FC = () => {
       </div>
 
       {/* Main Body */}
-      <div className="max-w-6xl mx-auto px-4 pt-5">
+      <div>
         {/* Navigation Tabs (Big touch targets for mobile) */}
         <div className="grid grid-cols-3 gap-2 p-1.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs mb-6">
           <button

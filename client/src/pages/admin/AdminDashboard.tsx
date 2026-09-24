@@ -129,27 +129,27 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Nav to 3 MVP Demo Portals */}
+          {/* Operational Role Switcher */}
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              to="/asha"
+              to="/asha/dashboard"
               className="px-3 py-1.5 rounded-xl bg-pink-600/20 text-pink-300 hover:bg-pink-600/30 border border-pink-500/30 text-xs font-bold transition flex items-center gap-1.5"
             >
-              <span>1. ASHA Portal (/asha)</span>
+              <span>ASHA Field Console</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link
-              to="/doctor"
+              to="/doctor/dashboard"
               className="px-3 py-1.5 rounded-xl bg-cyan-600/20 text-cyan-300 hover:bg-cyan-600/30 border border-cyan-500/30 text-xs font-bold transition flex items-center gap-1.5"
             >
-              <span>2. Doctor PHC (/doctor)</span>
+              <span>Doctor Consultation Desk</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link
               to="/hospital/referrals"
               className="px-3 py-1.5 rounded-xl bg-rose-600/20 text-rose-300 hover:bg-rose-600/30 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
             >
-              <span>3. DH Referral Desk (/hospital/referrals)</span>
+              <span>Facility Referral Network</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -261,11 +261,11 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="space-y-1">
             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              <Activity className="w-5 h-5 text-brand-600" />
-              <span>Live User Logins & Real-Time Security Feed</span>
+              <Activity className="w-5 h-5 text-teal-600" />
+              <span>Real-Time Operational Audit & System Activity Feed</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Live audit stream showing who is logging in (Google accounts, patients, hospitals, admin) saved in MongoDB.
+              Live audit stream recording system security, operational actions, and data access telemetry.
             </p>
           </div>
 

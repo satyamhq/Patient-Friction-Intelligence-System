@@ -100,19 +100,18 @@ export const AshaProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col items-center gap-4 text-center max-w-sm">
+      <div className="flex items-center justify-center p-12">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center gap-4 text-center max-w-sm">
           <RefreshCw className="w-8 h-8 text-teal-600 animate-spin" />
-          <p className="text-sm font-semibold text-slate-700">Loading ASHA frontline profile from MongoDB...</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Loading ASHA frontline profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Top Header Card */}
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* Top Header Card */}
         <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
@@ -374,8 +373,7 @@ export const AshaProfile: React.FC = () => {
           </form>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default AshaProfile;

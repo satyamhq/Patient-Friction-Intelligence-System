@@ -220,7 +220,7 @@ export const Navbar: React.FC = () => {
 
             <Link
               to="/architecture"
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+              className={`hidden xl:flex px-3 py-1.5 rounded-xl transition-all items-center gap-1.5 ${
                 isActive('/architecture')
                   ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 font-bold border border-teal-200/80 dark:border-teal-800 shadow-2xs'
                   : 'hover:text-teal-700 dark:hover:text-teal-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -244,7 +244,7 @@ export const Navbar: React.FC = () => {
 
             <Link
               to="/api"
-              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+              className={`hidden xl:flex px-3 py-1.5 rounded-xl transition-all items-center gap-1.5 ${
                 isActive('/api')
                   ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 font-bold border border-teal-200/80 dark:border-teal-800 shadow-2xs'
                   : 'hover:text-teal-700 dark:hover:text-teal-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -258,7 +258,7 @@ export const Navbar: React.FC = () => {
           {/* Right: Controls & CTAs */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Simple Mode Toggle */}
-            <div className="hidden sm:block">
+            <div className="hidden xl:block">
               <SimpleModeToggle />
             </div>
 

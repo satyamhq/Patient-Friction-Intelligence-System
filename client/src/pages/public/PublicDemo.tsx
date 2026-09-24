@@ -126,15 +126,15 @@ export const PublicDemo: React.FC = () => {
       </div>
 
       {/* Demo Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 border-b border-slate-200 dark:border-slate-800">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setSearchParams({ tab: tab.id })}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap transition-all shrink-0 cursor-pointer ${
               currentTab === tab.id
                 ? 'bg-teal-600 text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700'
             }`}
           >
             {tab.icon}

@@ -120,7 +120,7 @@ export const SystemArchitecture: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-12 max-w-6xl mx-auto py-4">
+    <div className="space-y-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       {/* Hero Banner */}
       <div className="bg-gradient-to-tr from-slate-900 via-navy-900 to-slate-800 text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-slate-800 space-y-6">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-950 text-teal-300 text-xs font-bold border border-teal-800">

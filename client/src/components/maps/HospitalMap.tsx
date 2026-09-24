@@ -48,15 +48,6 @@ export interface HospitalMapProps {
   height?: string;
 }
 
-export interface HospitalMapProps {
-  userLocation: { latitude: number; longitude: number };
-  hospitals: Hospital[];
-  selectedHospitalId?: string;
-  onSelectHospital?: (hospital: Hospital) => void;
-  radiusKm?: number;
-  height?: string;
-}
-
 export const HospitalMap: React.FC<HospitalMapProps> = ({
   userLocation,
   hospitals,

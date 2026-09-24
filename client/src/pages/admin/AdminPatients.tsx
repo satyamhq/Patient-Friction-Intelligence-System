@@ -40,7 +40,7 @@ export const AdminPatients: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">

@@ -57,7 +57,7 @@ export const DoctorPatientReview: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in duration-300">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Longitudinal Patient Health Records</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">

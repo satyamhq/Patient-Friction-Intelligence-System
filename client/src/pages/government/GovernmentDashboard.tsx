@@ -46,7 +46,7 @@ export const GovernmentDashboard: React.FC = () => {
   const metrics = overview?.metrics;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 max-w-7xl mx-auto animate-in fade-in duration-300">
       {/* Top Banner */}
       <div className="rounded-3xl bg-gradient-to-r from-amber-600 via-amber-700 to-orange-800 p-6 sm:p-8 text-white shadow-xl shadow-amber-500/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
