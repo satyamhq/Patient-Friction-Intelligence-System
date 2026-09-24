@@ -146,6 +146,7 @@ export const App: React.FC = () => {
                         <Route path="/contributing" element={<ContributingGuide />} />
                         <Route path="/changelog" element={<ChangelogPage />} />
                         <Route path="/portals" element={<OperationalPortalsLaunchpad />} />
+                        <Route path="/api-docs" element={<Navigate to="/api" replace />} />
                         <Route path="/hospitals" element={<Navigate to="/patient/hospitals" replace />} />
                       </Route>
 
@@ -214,6 +215,7 @@ export const App: React.FC = () => {
                         <Route path="appointments" element={<DoctorAppointments />} />
                         <Route path="medical-records" element={<DoctorMedicalRecords />} />
                         <Route path="queue" element={<DoctorConsultationDesk />} />
+                        <Route path="consultation-desk" element={<DoctorConsultationDesk />} />
                         <Route path="patient-review" element={<DoctorPatientReview />} />
                         <Route path="profile" element={<DoctorProfile />} />
                       </Route>
