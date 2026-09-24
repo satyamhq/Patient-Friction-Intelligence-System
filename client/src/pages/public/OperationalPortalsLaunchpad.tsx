@@ -104,13 +104,13 @@ export const OperationalPortalsLaunchpad: React.FC = () => {
             Healthcare Operations Portals
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            Choose a persona below for a 1-click test session, or sign in directly with your organization credentials.
+            Explore role-based operational portals below, or sign in with your enterprise credentials.
           </p>
         </div>
 
         <Link to="/login">
           <Button variant="secondary" size="md">
-            Custom Sign In →
+            Sign In to Account →
           </Button>
         </Link>
       </div>

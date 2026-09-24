@@ -478,7 +478,7 @@ async function runComprehensiveTests() {
   let adminToken = '';
   await test('Admin Authentication', async () => {
     const res = await axios.post(`${API_URL}/auth/login`, {
-      email: 'dhirajkumar464748@gmail.com',
+      email: 'admin@pfis.org',
       password: 'Admin@123',
     });
     if (!res.data?.success || !res.data?.token) throw new Error('Admin login failed');

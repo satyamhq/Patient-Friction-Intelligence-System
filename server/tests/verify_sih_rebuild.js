@@ -4,7 +4,7 @@ import { HighRiskRecallEngine } from '../dist/intelligence/recall/highRiskRecall
 import { AbhaService } from '../dist/services/abhaService.js';
 
 console.log('================================================================');
-console.log('  PFIS SIH-2026 5-LAYER BACKBONE VERIFICATION');
+console.log('  PFIS 5-LAYER HEALTHCARE CONTINUITY BACKBONE VERIFICATION');
 console.log('================================================================\n');
 
 // Test 1: ABHA Digital Health Card & QR Generation

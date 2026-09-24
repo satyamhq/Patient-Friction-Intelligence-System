@@ -763,19 +763,20 @@ export const Navbar: React.FC = () => {
               ) : (
                 <div className="space-y-2">
                   <Link
-                    to="/login?role=admin"
+                    to="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-xs"
                   >
-                    <Shield className="w-4 h-4 mr-2 text-teal-300" />
-                    Admin Sign In
+                    <UserIcon className="w-4 h-4 mr-2 text-teal-300" />
+                    Sign In to Portal
                   </Link>
                   <Link
-                    to="/register"
+                    to="/demo"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl font-bold text-xs bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-xs"
                   >
-                    {t('nav.register', 'Register New Patient / Hospital')}
+                    <Activity className="w-4 h-4 mr-2 text-white" />
+                    Interactive Simulator Demo
                   </Link>
                 </div>
               )}

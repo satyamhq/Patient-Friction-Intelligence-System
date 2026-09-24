@@ -13,9 +13,9 @@
     },
     {
       "id": "99860eac-f5dc-4683-a462-7185fa1adcd3",
-      "email": "dhirajkumar464748@gmail.com",
+      "email": "sysadmin@pfis.local",
       "password_hash": "$2a$10$PiSdN0qcvRK0pJJH63vIHuEOvO./kS3oyGZvo9B7WGl9YpQur3etO",
-      "name": "Dhiraj Kumar (Executive Admin)",
+      "name": "System Administrator",
       "role": "admin",
       "phone": "+91 91234 56789",
       "google_id": null,
@@ -53,8 +53,8 @@
       "updatedat": "2026-09-04T08:17:24.739Z"
     },
     {
-      "name": "Dhiraj Kumar",
-      "email": "dhirajkumar45710@gmail.com",
+      "name": "Devendra Singh",
+      "email": "clinician@pfis.local",
       "passwordhash": "$2a$10$jF.QHMga7aiUxvidF56p6OtRSl6hsWrxVam6E.b/lgflFkHfhWZna",
       "role": "hospital",
       "avatarurl": "https://lh3.googleusercontent.com/a/ACg8ocI3lUGPLu4K_JK9X7R32skQYBt1Oqztslfl1d9d1T0K6p3MtA=s96-c",
@@ -68,8 +68,8 @@
       "password_hash": "$2a$10$jF.QHMga7aiUxvidF56p6OtRSl6hsWrxVam6E.b/lgflFkHfhWZna"
     },
     {
-      "name": "Dhiraj Kumar",
-      "email": "dhirajkushwaha6857@gmail.com",
+      "name": "Devendra Singh",
+      "email": "operations@pfis.local",
       "passwordhash": "$2a$10$.L8WxZRQlrtax4r44T.xT.MVeZDDxfz1W0YoE7ktrSmf2.8OE278q",
       "role": "hospital",
       "phone": "7256052183",
@@ -299,7 +299,7 @@
       "longitude": 75.7042,
       "geojson": "{\"type\":\"Point\",\"coordinates\":[75.7042,31.2533]}",
       "phone": "7256052183",
-      "email": "dhirajkushwaha6857@gmail.com",
+      "email": "operations@pfis.local",
       "emergencyavailable": true,
       "totalbeds": 300,
       "availablebeds": 45,
@@ -4529,7 +4529,7 @@
       "ipaddress": "::1",
       "useragent": "node",
       "details": {
-        "email": "dhirajkumar464748@gmail.com"
+        "email": "sysadmin@pfis.local"
       },
       "timestamp": "2026-09-04T08:15:49.899Z",
       "id": "db0c8c06-97ec-4ccc-b286-c4f6ecad277b",
@@ -4749,7 +4749,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar464748@gmail.com",
+        "email": "sysadmin@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:22:07.251Z",
@@ -4788,7 +4788,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar464748@gmail.com",
+        "email": "sysadmin@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:23:15.870Z",
@@ -4809,7 +4809,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar464748@gmail.com",
+        "email": "sysadmin@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:23:16.125Z",
@@ -4848,7 +4848,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar45710@gmail.com",
+        "email": "clinician@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:23:44.208Z",
@@ -4869,7 +4869,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar45710@gmail.com",
+        "email": "clinician@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:23:44.212Z",
@@ -4908,7 +4908,7 @@
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
       "details": {
-        "email": "dhirajkumar45710@gmail.com",
+        "email": "clinician@pfis.local",
         "provider": "google"
       },
       "timestamp": "2026-09-04T08:26:53.239Z",
@@ -4967,7 +4967,7 @@
       "ipaddress": "::1",
       "useragent": "node",
       "details": {
-        "email": "dhirajkumar464748@gmail.com"
+        "email": "sysadmin@pfis.local"
       },
       "timestamp": "2026-09-04T08:39:59.880Z",
       "id": "a0f786b8-4a63-43c3-9739-8b008e7eabdc",
@@ -4987,7 +4987,7 @@
       "ipaddress": "::1",
       "useragent": "node",
       "details": {
-        "email": "dhirajkumar464748@gmail.com"
+        "email": "sysadmin@pfis.local"
       },
       "timestamp": "2026-09-04T08:40:49.529Z",
       "id": "ee66606a-20a5-4c3b-a55b-584338960557",
@@ -5062,7 +5062,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-      "details": "{\"email\":\"dhirajkumar45710@gmail.com\",\"provider\":\"google\"}",
+      "details": "{\"email\":\"clinician@pfis.local\",\"provider\":\"google\"}",
       "timestamp": "\"2026-09-04T08:54:08.985Z\"",
       "id": "6c4e51f1-9127-424d-9f53-af1f890d9a0a",
       "_id": "6c4e51f1-9127-424d-9f53-af1f890d9a0a",
@@ -5080,7 +5080,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "node",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T08:59:54.975Z\"",
       "id": "7985bbe0-abe3-405f-a237-9965986222e8",
       "_id": "7985bbe0-abe3-405f-a237-9965986222e8",
@@ -5098,7 +5098,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "node",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T09:01:29.462Z\"",
       "id": "8fb489a1-9659-487b-8e44-902bc176e0e1",
       "_id": "8fb489a1-9659-487b-8e44-902bc176e0e1",
@@ -5134,7 +5134,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T09:34:44.919Z\"",
       "id": "6efbf859-090b-4168-bdd7-9bc97890fbc7",
       "_id": "6efbf859-090b-4168-bdd7-9bc97890fbc7",
@@ -5170,7 +5170,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-      "details": "{\"email\":\"dhirajkushwaha6857@gmail.com\",\"role\":\"hospital\"}",
+      "details": "{\"email\":\"operations@pfis.local\",\"role\":\"hospital\"}",
       "timestamp": "\"2026-09-04T09:38:02.336Z\"",
       "id": "3ac24d43-8b13-4a0d-a0b2-956a9a22f7df",
       "_id": "3ac24d43-8b13-4a0d-a0b2-956a9a22f7df",
@@ -5242,7 +5242,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T09:41:54.990Z\"",
       "id": "1f2851ab-3696-43fd-a4c4-e5122067c413",
       "_id": "1f2851ab-3696-43fd-a4c4-e5122067c413",
@@ -5260,7 +5260,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "node",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T10:19:31.028Z\"",
       "id": "c7a13c02-d578-45c3-98c3-2e2364627bdc",
       "_id": "c7a13c02-d578-45c3-98c3-2e2364627bdc",
@@ -5332,7 +5332,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\",\"provider\":\"google\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\",\"provider\":\"google\"}",
       "timestamp": "\"2026-09-04T10:21:28.210Z\"",
       "id": "5b88775a-b6e4-4988-9720-019599126d30",
       "_id": "5b88775a-b6e4-4988-9720-019599126d30",
@@ -5386,7 +5386,7 @@
       "resourceid": null,
       "ipaddress": "::1",
       "useragent": "node",
-      "details": "{\"email\":\"dhirajkumar464748@gmail.com\"}",
+      "details": "{\"email\":\"sysadmin@pfis.local\"}",
       "timestamp": "\"2026-09-04T10:33:13.948Z\"",
       "id": "ac16ad0e-3815-4774-8b2a-6008f79a22d0",
       "_id": "ac16ad0e-3815-4774-8b2a-6008f79a22d0",

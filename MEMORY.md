@@ -1,13 +1,12 @@
-# PFIS Project Memory & Architecture Context Bank
-### Institutional Knowledge Ledger & Rebuild History (SIH 2026)
+# PFIS Project Architecture & Knowledge Context Bank
+### Institutional Knowledge Ledger & Healthcare Continuity Architecture
 
 ---
 
-## 1. Core Mandate & Hackathon Alignment
+## 1. Core Mandate & Problem Scope
 
-- **Event**: Smart India Hackathon (SIH) 2026
-- **Problem Statement**: "Accessibility and quality of public healthcare services, particularly in rural and underserved areas"
-- **Platform Identity**: Patient Friction Intelligence System (PFIS) — an offline-first, layered public health continuity platform built to **strengthen, not replace**, existing government infrastructure (ABDM, e-Sanjeevani, HMIS).
+- **Domain Scope**: Accessibility and quality of public healthcare services, particularly in rural and underserved areas.
+- **Platform Identity**: Patient Friction Intelligence System (PFIS) — an offline-first, layered public health continuity platform built to **strengthen, not replace**, existing public health infrastructure (ABDM, e-Sanjeevani, HMIS).
 
 ---
 

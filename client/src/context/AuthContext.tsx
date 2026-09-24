@@ -109,15 +109,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isDemoAccount =
         cleanEmail === 'admin@pfis.org' ||
         cleanEmail === 'hospital@apollo.org' ||
-        cleanEmail === 'patient@pfis.org' ||
-        cleanEmail === 'dhirajkumar464748@gmail.com';
+        cleanEmail === 'patient@pfis.org';
 
       if (isDemoAccount) {
         let demoRole: 'admin' | 'hospital' | 'patient' = 'patient';
         let demoName = 'Demo Patient';
-        if (cleanEmail === 'admin@pfis.org' || cleanEmail === 'dhirajkumar464748@gmail.com') {
+        if (cleanEmail === 'admin@pfis.org') {
           demoRole = 'admin';
-          demoName = 'Dhiraj Kumar (Executive Admin)';
+          demoName = 'Platform Administrator';
         } else if (cleanEmail === 'hospital@apollo.org') {
           demoRole = 'hospital';
           demoName = 'Apollo Health Facility';

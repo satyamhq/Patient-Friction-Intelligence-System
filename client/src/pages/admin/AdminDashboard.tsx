@@ -109,7 +109,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 5-Layer Public Healthcare Continuity & Accountability Panel (SIH 2026 Mandate) */}
+      {/* 5-Layer Public Healthcare Continuity & Accountability Panel */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 shadow-xl space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-3">

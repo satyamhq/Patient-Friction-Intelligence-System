@@ -153,7 +153,7 @@ export const GoogleCallback: React.FC = () => {
         console.error('[GoogleCallback Page Error]', err);
         const tokenNow = localStorage.getItem('pfis_auth_token') || localStorage.getItem('pfis_token');
         if (tokenNow) {
-          navigate('/admin/dashboard', { replace: true });
+          navigate('/patient/dashboard', { replace: true });
           return;
         }
 
@@ -161,7 +161,7 @@ export const GoogleCallback: React.FC = () => {
         const rawMsg = err.response?.data?.message || '';
         if (rawMsg.toLowerCase().includes('bad request') || rawMsg.toLowerCase().includes('invalid_grant')) {
           setErrorMessage(
-            'The Google login authorization code has expired or was already consumed. Please return to Login and click "Sign in with Google" again, or use 1-click password login.'
+            'The Google login authorization code has expired or was already consumed. Please return to Login and click "Sign in with Google" again, or sign in with your email credentials.'
           );
         } else {
           setErrorMessage(rawMsg || 'Failed to exchange authorization code with Google Cloud OAuth.');

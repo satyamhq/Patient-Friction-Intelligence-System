@@ -16,11 +16,9 @@ import {
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  KeyRound,
   ShieldCheck,
   Globe,
   Loader2,
-  Zap,
   Stethoscope,
   Users as UsersIcon,
 } from 'lucide-react';
@@ -52,8 +50,6 @@ interface PortalConfig {
   badge: string;
   badgeColor: string;
   icon: React.ReactNode;
-  defaultEmail: string;
-  defaultPass: string;
   accentBorder: string;
   features: string[];
 }
@@ -63,11 +59,11 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 export const Login: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const initialRole = (searchParams.get('role') as PortalRole) || 'admin';
+  const initialRole = (searchParams.get('role') as PortalRole) || 'patient';
 
   const [activePortal, setActivePortal] = useState<PortalRole>(initialRole);
-  const [email, setEmail] = useState('dhirajkumar464748@gmail.com');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +79,6 @@ export const Login: React.FC = () => {
       searchParams.get('logged_out') === 'true' || searchParams.get('session_expired') === 'true';
 
     if (isExplicitLogout) {
-      // Ensure all residual storage is cleared
       localStorage.removeItem('pfis_auth_token');
       localStorage.removeItem('pfis_auth_user');
       localStorage.removeItem('pfis_auth_profile');
@@ -97,29 +92,6 @@ export const Login: React.FC = () => {
       navigate(getRoleDashboard(user.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate, searchParams]);
-
-  // Set default fields whenever portal switches
-  useEffect(() => {
-    if (activePortal === 'admin') {
-      setEmail('dhirajkumar464748@gmail.com');
-      setPassword('Admin@123');
-    } else if (activePortal === 'hospital') {
-      setEmail('hospital@apollo.org');
-      setPassword('Hospital@123');
-    } else if (activePortal === 'doctor') {
-      setEmail('doctor@pfis.org');
-      setPassword('Doctor@123');
-    } else if (activePortal === 'asha') {
-      setEmail('asha@pfis.org');
-      setPassword('Asha@123');
-    } else if (activePortal === 'government') {
-      setEmail('official@punjab.gov.in');
-      setPassword('Gov@123');
-    } else {
-      setEmail('patient@pfis.org');
-      setPassword('Patient@123');
-    }
-  }, [activePortal]);
 
   const activePortalRef = useRef(activePortal);
   useEffect(() => {
@@ -137,7 +109,7 @@ export const Login: React.FC = () => {
           callback: async (response: any) => {
             if (response.credential) {
               setIsGoogleLoading(true);
-              setRedirectingMessage('Verifying Google credentials with MongoDB...');
+              setRedirectingMessage('Verifying credentials...');
               try {
                 const res = await loginWithGoogle(response.credential, activePortalRef.current);
                 if (res.success) {
@@ -148,7 +120,7 @@ export const Login: React.FC = () => {
                 }
               } catch (err: any) {
                 setRedirectingMessage(null);
-                setError(err.response?.data?.message || 'Google authentication failed.');
+                setError(err.response?.data?.message || 'Authentication failed.');
               } finally {
                 setIsGoogleLoading(false);
               }
@@ -166,12 +138,10 @@ export const Login: React.FC = () => {
     {
       id: 'patient',
       title: t('auth.patientPortalTitle', 'Patient & Citizen'),
-      subtitle: t('auth.patientPortalSubtitle', 'Barrier check, nearby hospital locator & OPD appointments'),
+      subtitle: t('auth.patientPortalSubtitle', 'Barrier assessment, hospital locator & OPD tokens'),
       badge: t('auth.patientBadge', 'Citizen'),
       badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300',
       icon: <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
-      defaultEmail: 'patient@pfis.org',
-      defaultPass: 'Patient@123',
       accentBorder: 'border-emerald-500 ring-emerald-500/20',
       features: [
         'Personal Friction Fingerprint',
@@ -182,12 +152,10 @@ export const Login: React.FC = () => {
     {
       id: 'doctor',
       title: 'Doctor / Physician',
-      subtitle: 'Clinical OPD consultation queue, Rx desk & health records',
+      subtitle: 'Clinical OPD queue, prescription desk & records',
       badge: 'Physician',
       badgeColor: 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950 dark:text-teal-300',
       icon: <Stethoscope className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
-      defaultEmail: 'doctor@pfis.org',
-      defaultPass: 'Doctor@123',
       accentBorder: 'border-teal-500 ring-teal-500/20',
       features: [
         'Live OPD Token Calling & Queue',
@@ -198,12 +166,10 @@ export const Login: React.FC = () => {
     {
       id: 'hospital',
       title: t('auth.hospitalPortalTitle', 'Hospital Facility'),
-      subtitle: t('auth.hospitalPortalSubtitle', 'Operations flow, pharmacy inventory & referral triage'),
+      subtitle: 'Operations flow, pharmacy formulary & triage',
       badge: t('auth.hospitalBadge', 'Facility'),
       badgeColor: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300',
       icon: <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-      defaultEmail: 'hospital@apollo.org',
-      defaultPass: 'Hospital@123',
       accentBorder: 'border-blue-500 ring-blue-500/20',
       features: [
         'Patient Flow & Queue Tracking',
@@ -218,8 +184,6 @@ export const Login: React.FC = () => {
       badge: 'Community',
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300',
       icon: <UsersIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
-      defaultEmail: 'asha@pfis.org',
-      defaultPass: 'Asha@123',
       accentBorder: 'border-amber-500 ring-amber-500/20',
       features: [
         'Household Health Visits',
@@ -234,8 +198,6 @@ export const Login: React.FC = () => {
       badge: 'Governance',
       badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-300',
       icon: <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
-      defaultEmail: 'official@punjab.gov.in',
-      defaultPass: 'Gov@123',
       accentBorder: 'border-indigo-500 ring-indigo-500/20',
       features: [
         'Geospatial Friction Heatmap',
@@ -245,13 +207,11 @@ export const Login: React.FC = () => {
     },
     {
       id: 'admin',
-      title: t('auth.adminPortalTitle', 'Statewide Admin'),
-      subtitle: t('auth.adminPortalSubtitle', 'User & role control, verification queue & system health'),
-      badge: t('auth.adminBadge', 'Security L1'),
+      title: t('auth.adminPortalTitle', 'Platform Admin'),
+      subtitle: 'System governance, verification queue & telemetry',
+      badge: t('auth.adminBadge', 'System Admin'),
       badgeColor: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300',
       icon: <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
-      defaultEmail: 'dhirajkumar464748@gmail.com',
-      defaultPass: 'Admin@123',
       accentBorder: 'border-purple-500 ring-purple-500/20',
       features: [
         'User Management & Roles',
@@ -273,7 +233,7 @@ export const Login: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
-    setRedirectingMessage(`Authenticating ${roleEmail} in PFIS...`);
+    setRedirectingMessage(`Authenticating ${roleEmail}...`);
 
     try {
       const res = await login(roleEmail, rolePass);
@@ -293,19 +253,18 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError('Please provide both email address and password.');
       return;
     }
-    await handleDirectSignIn(email, password, activePortal);
+    await handleDirectSignIn(email.trim(), password, activePortal);
   };
 
-  // DIRECT REAL GOOGLE OAUTH 2.0 LOGIN
   const handleDirectRealGoogleSignIn = async () => {
     setError(null);
     setSuccessMessage(null);
     setIsGoogleLoading(true);
-    setRedirectingMessage('Opening official Google Cloud OAuth dialog...');
+    setRedirectingMessage('Connecting to Google OAuth...');
 
     try {
       const res = await authService.getGoogleAuthUrl(activePortal, GOOGLE_CLIENT_ID);
@@ -314,10 +273,9 @@ export const Login: React.FC = () => {
         return;
       }
     } catch (err: any) {
-      console.warn('Backend getGoogleAuthUrl did not return URL, navigating directly to backend Google OAuth route:', err);
+      console.warn('Navigating directly to backend Google OAuth route:', err);
     }
 
-    // Direct backend OAuth endpoint navigation
     window.location.href = authService.getGoogleOAuthRedirectUrl(activePortal);
   };
 
@@ -334,7 +292,7 @@ export const Login: React.FC = () => {
               {redirectingMessage}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Synchronizing session with PFIS Intelligence Engine...
+              Synchronizing session with PFIS Security Gateway...
             </p>
           </div>
         </div>
@@ -356,33 +314,34 @@ export const Login: React.FC = () => {
 
       {/* Main Title & Subtitle */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-bold mb-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-          <span>PFIS Health Ministry & Administration Command Portal</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300 text-xs font-semibold mb-1">
+          <ShieldCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+          <span>Operational Healthcare Portals</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-          Admin Portal Sign In
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Sign In — {currentPortalConfig.title}
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
-          Health Ministry & Administrative Intelligence Engine. Sign in as Admin or switch to Clinical / Citizen access.
+          Access your organization workspace, friction intelligence, and operational workflows.
         </p>
       </div>
 
-      {/* 6 Dedicated Portal Selection Cards with 1-Click Entry */}
+      {/* Dedicated Portal Selection Tabs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
         {portals.map((portal) => {
           const isSelected = activePortal === portal.id;
           return (
-            <div
+            <button
+              type="button"
               key={portal.id}
               onClick={() => handlePortalSwitch(portal.id)}
-              className={`text-left p-4 rounded-2xl border transition-all relative flex flex-col justify-between cursor-pointer ${
+              className={`text-left p-3.5 rounded-2xl border transition-all relative flex flex-col justify-between cursor-pointer ${
                 isSelected
-                  ? `bg-slate-50/95 dark:bg-slate-800/95 border-2 shadow-lg ${portal.accentBorder}`
+                  ? `bg-slate-50/95 dark:bg-slate-800/95 border-2 shadow-sm ${portal.accentBorder}`
                   : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <div className="flex items-center justify-between">
                   <div className="p-2 rounded-xl bg-white dark:bg-slate-900 shadow-xs border border-slate-100 dark:border-slate-800">
                     {portal.icon}
@@ -392,56 +351,18 @@ export const Login: React.FC = () => {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                     {portal.title}
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
                     {portal.subtitle}
                   </p>
                 </div>
               </div>
-
-              <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <span className="text-[10px] font-mono text-slate-400 truncate max-w-[130px]">
-                  {portal.defaultEmail}
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDirectSignIn(portal.defaultEmail, portal.defaultPass, portal.id);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-xs transition-colors ${
-                    portal.id === 'admin'
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                      : portal.id === 'hospital'
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  }`}
-                >
-                  <Zap className="w-3 h-3" />
-                  <span>Enter</span>
-                </button>
-              </div>
-            </div>
+            </button>
           );
         })}
       </div>
-
-      {/* Admin Specific Notice */}
-      {activePortal === 'admin' && (
-        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-2xl flex items-center gap-3 text-xs">
-          <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-          <div className="flex-1">
-            <span className="font-bold text-purple-900 dark:text-purple-200 block">
-              Authorized Executive Admin Email: dhirajkumar464748@gmail.com & admin@pfis.org
-            </span>
-            <span className="text-[11px] text-purple-700 dark:text-purple-300">
-              Only authorized administrative emails get access to the Admin Intelligence Suite. All other accounts are automatically routed to Patient or Clinical portals.
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Feature Highlights of the Active Portal */}
       <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800">
@@ -450,7 +371,7 @@ export const Login: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span>Portal Capabilities for {currentPortalConfig.title}:</span>
           </span>
-          <span className="text-[10px] text-slate-400">Live Dynamic System</span>
+          <span className="text-[10px] text-slate-400">Enterprise Ready</span>
         </div>
         <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
           {currentPortalConfig.features.map((feat, i) => (
@@ -460,63 +381,6 @@ export const Login: React.FC = () => {
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* 1-Click Verified Demo Accounts Bar */}
-      <div className="p-4 bg-slate-100/70 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2.5">
-        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-          <span className="flex items-center gap-1.5">
-            <KeyRound className="w-4 h-4 text-brand-600" />
-            <span>1-Click Verified Database Credentials (Click to Sign In):</span>
-          </span>
-          <span className="text-[10px] text-slate-500 font-normal">Real MongoDB Accounts</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => handleDirectSignIn('dhirajkumar464748@gmail.com', 'Admin@123', 'admin')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs ${
-              email === 'dhirajkumar464748@gmail.com'
-                ? 'bg-purple-600 text-white border-purple-600'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'
-            }`}
-          >
-            🛡️ Dhiraj Kumar (dhirajkumar464748@gmail.com)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDirectSignIn('admin@pfis.org', 'Admin@123', 'admin')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs ${
-              email === 'admin@pfis.org'
-                ? 'bg-purple-600 text-white border-purple-600'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'
-            }`}
-          >
-            🛡️ Master Admin (admin@pfis.org)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDirectSignIn('hospital@apollo.org', 'Hospital@123', 'hospital')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs ${
-              activePortal === 'hospital'
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'
-            }`}
-          >
-            🏥 Apollo Hospital (Clinical)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDirectSignIn('patient@pfis.org', 'Patient@123', 'patient')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-xs ${
-              activePortal === 'patient'
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
-            }`}
-          >
-            👤 Sunita Devi (Patient)
-          </button>
-        </div>
       </div>
 
       {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
@@ -537,15 +401,14 @@ export const Login: React.FC = () => {
         </div>
       )}
 
-      {/* REAL DIRECT GOOGLE OAUTH 2.0 BUTTON (NO POPUP SETUP MODAL) */}
+      {/* Google OAuth Button */}
       <div className="space-y-3">
         <button
           type="button"
           onClick={handleDirectRealGoogleSignIn}
           disabled={isGoogleLoading || isLoading}
-          className="w-full py-3.5 px-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-white font-bold text-sm rounded-xl border border-slate-300 dark:border-slate-700 shadow-sm flex items-center justify-center gap-3 transition-all hover:shadow-md disabled:opacity-50 group cursor-pointer"
+          className="w-full py-3.5 px-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-white font-bold text-sm rounded-xl border border-slate-300 dark:border-slate-700 shadow-xs flex items-center justify-center gap-3 transition-all hover:shadow-sm disabled:opacity-50 group cursor-pointer"
         >
-          {/* Official Google G SVG Icon */}
           <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
@@ -566,18 +429,18 @@ export const Login: React.FC = () => {
           </svg>
           <span>
             {isGoogleLoading
-              ? 'Opening Google Cloud OAuth Dialog...'
-              : `Sign In with Real Google Account (${currentPortalConfig.title})`}
+              ? 'Connecting to Google OAuth...'
+              : `Sign In with Google Account (${currentPortalConfig.title})`}
           </span>
         </button>
 
         <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1 px-1">
           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
             <ShieldCheck className="w-4 h-4" />
-            <span>Google Cloud OAuth 2.0 Active & Verified</span>
+            <span>Google OAuth 2.0 Enabled</span>
           </div>
           <span className="text-slate-400">
-            Real Google Accounts Login
+            Single Sign-On Supported
           </span>
         </div>
       </div>
@@ -590,12 +453,12 @@ export const Login: React.FC = () => {
         </span>
       </div>
 
-      {/* Dynamic Portal Login Form */}
+      {/* Portal Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label={t('auth.emailLabel', 'Email Address')}
           type="email"
-          placeholder={currentPortalConfig.defaultEmail}
+          placeholder="user@organization.org"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           icon={<Mail className="w-4 h-4" />}
@@ -630,7 +493,7 @@ export const Login: React.FC = () => {
           {t('auth.noAccount', "Don't have an account?")}{' '}
           <Link
             to={`/register?role=${activePortal}`}
-            className="font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400"
+            className="font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400"
           >
             {t('auth.createAccount', 'Register for PFIS')}
           </Link>
