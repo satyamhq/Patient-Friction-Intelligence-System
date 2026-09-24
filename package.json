@@ -4,7 +4,7 @@
   "description": "Patient Friction Intelligence System (PFIS) - Non-clinical Healthcare Accessibility Platform",
   "private": true,
   "scripts": {
-    "postinstall": "cd client && npm install",
+    "postinstall": "cd server && npm install && cd ../client && npm install",
     "install:server": "cd server && npm install",
     "install:client": "cd client && npm install",
     "install:all": "cd server && npm install && cd ../client && npm install",
