@@ -1,162 +1,242 @@
 # Patient Friction Intelligence System (PFIS)
 
-> **An integrated care-access and quality intelligence layer for public healthcare, especially rural and underserved communities.**  
-> *Smart India Hackathon (SIH) 2026 | National Health Mission & Ayushman Bharat Digital Mission (ABDM) Aligned*
+> **An open-source platform for modeling, measuring, visualizing, and simulating non-clinical barriers that prevent patients from completing healthcare journeys.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/Build-Passing-emerald.svg)](https://github.com/satyamhq/Patient-Friction-Intelligence-System)
+[![Tests: 27/27](https://img.shields.io/badge/Tests-27%2F27%20Passed-blue.svg)](https://github.com/satyamhq/Patient-Friction-Intelligence-System)
+[![Docker: Supported](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://github.com/satyamhq/Patient-Friction-Intelligence-System)
+[![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict-3178C6.svg)](https://www.typescriptlang.org/)
+[![Synthetic Data: 100%](https://img.shields.io/badge/Data-100%25%20Synthetic-9333EA.svg)](./data/README.md)
 
 ---
 
-## 💡 The Core Innovation
+## Why PFIS?
 
-Traditional healthcare management systems ask only:
-> *"Is healthcare available?"* (Do we have a doctor, a clinic, and medicines?)
+Traditional healthcare systems ask:
+> *"Is care physically available?"* (Do we have a doctor, hospital beds, and pharmaceuticals?)
 
-PFIS asks the missing, high-impact question:
-> **"Can this patient practically navigate and complete the healthcare journey?"**
+Yet across low- and middle-income regions, up to 40% of patients fail to complete prescribed medical regimens because of **non-clinical friction**:
+- **Transit & Distance**: Lack of reliable buses or prohibitive travel costs
+- **Lost Wages**: Inability of daily informal wage earners to surrender a day of income
+- **Documentation**: Missing health insurance cards, identity certificates, or referral slips
+- **Digital Literacy**: Inability to navigate mobile booking portals
+- **Language & Cultural Barriers**: Vernacular disconnect with urban tertiary providers
+
+**PFIS quantifies these invisible barriers into an actionable operational intelligence layer, allowing health administrators to simulate interventions and optimize care completion under constrained budgets.**
+
+---
+
+## What PFIS Does
 
 ```
-Traditional Healthcare View:
-Patient ──> Disease ──> Doctor ──> Hospital ──> Treatment
+Traditional View:
+  Patient ──► Hospital ──► Care Complete (Assumed)
 
-Patient Friction Intelligence View:
-Patient ──> Medical Need + Travel + Cost + Transport + Digital Access + Language + Documentation + Family Support 
-        ──> Can this patient actually complete care?
+PFIS Friction Journey:
+  Referral ──► Consultation ──► Diagnostics ──► Treatment ──► Follow-up
+      │              │               │              │             │
+      ▼              ▼               ▼              ▼             ▼
+   Transit        Wage Loss      Missing Docs   Wait Times    Affordability
+  (Dropout)      (Dropout)        (Dropout)     (Dropout)       (Dropout)
 ```
 
-**One-Line Innovation Statement:**
-> *We model the invisible, non-clinical barriers that cause a patient's healthcare journey to fail, then simulate practical interventions to identify the most cost-effective way to remove those barriers with limited public-health resources.*
+PFIS tracks and simulates this attrition, identifying where patients drop out and which programmatic levers (e.g. community shuttles, point-of-care diagnostics, or vernacular counselors) produce the highest completion gains per dollar spent.
 
 ---
 
-## 🧠 9 Core Intelligence Features
+## Core Features
 
-| # | Feature | Operational Capability |
-|---|---|---|
-| **1** | **Patient Friction Fingerprint** | Multi-dimensional scoring across 8 non-clinical barriers: Travel Distance, Transport, Digital Literacy, Language, Family Support, Documentation/Identity, Cost, and Appointment Timing. |
-| **2** | **Friction Interaction Engine** | Evaluates compounding barrier amplification (e.g., transport deficit + lack of caregiver creates superlinear care dropout risk). |
-| **3** | **Care Failure Risk** | Computes the non-clinical probability (0–100%) that a patient will drop out before completing their prescribed care regimen. |
-| **4** | **Friction Digital Twin** | Virtual patient model mirroring real-world barriers for counterfactual scenario analysis. |
-| **5** | **What-If Intervention Simulator** | Real-time decision support simulating policy interventions (e.g., Community Shuttle + Local Diagnostics improving care completion from 37% → 60% → 82%). |
-| **6** | **Intervention Optimizer** | Budget-constrained resource allocation (knapsack algorithm) prioritizing maximum lives saved and highest barrier reduction per rupee spent. |
-| **7** | **Population Friction Map** | Geographic heatmap of rural administrative blocks identifying localized dominant friction types (e.g., Transport in Block A vs. Diagnostics in Block B). |
-| **8** | **Care Leakage Funnel** | Tracks 5-stage patient attrition: `Referral` → `Consultation` → `Diagnostics` → `Treatment` → `Follow-up`. |
-| **9** | **"Why Did Care Fail?" Engine** | Post-dropout root-cause attribution quantifying non-clinical causes (e.g., 36% Transport, 21% Timing, 17% Diagnostic Delays). |
+1. **Patient Friction Fingerprint (8D)**: Multi-dimensional scoring across travel distance, transit reliability, direct cost, wage loss, documentation, digital access, language, and clinic timing.
+2. **Friction Interaction Engine**: Evaluates compounding non-linear barrier amplification (e.g., transit deficit $\times$ daily wage loss creates superlinear dropout hazard).
+3. **Care Failure Risk Model**: Computes calibrated care abandonment probabilities using a logistic response curve.
+4. **Friction Digital Twin**: Parameterized counterfactual models representing archetypal socio-demographic patient profiles.
+5. **What-If Intervention Simulator**: Real-time interactive decision support simulating policy interventions (e.g., Baseline 42% $\to$ Shuttle 61% $\to$ Local Labs 76% completion).
+6. **Constrained Intervention Optimizer**: Knapsack optimization maximizing care completion under finite operational budgets.
+7. **Population Friction Map**: Geospatial visualization powered by OpenStreetMap identifying local barrier clusters.
+8. **5-Stage Care Leakage Funnel**: Continuous Markov tracking from initial referral to long-term follow-up.
+9. **Additive Barrier Attribution**: Decomposes total friction into an explainable point-by-point breakdown (no opaque black boxes).
 
 ---
 
-## 🏛️ Interoperable 5-Layer Public Healthcare Architecture
+## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│              LAYER 1: FRONTLINE PATIENT ACCESS (OFFLINE-FIRST)          │
-│  Progressive Web App (PWA) • Dexie.js IndexedDB Sync • Multilingual UI  │
-├─────────────────────────────────────────────────────────────────────────┤
-│              LAYER 2: CLINICAL DIGITAL TRIAGE & DECISION ROUTER         │
-│  IMNCI Pediatric (<5y) • Maternal High-Risk Flags • Urgency Router     │
-├─────────────────────────────────────────────────────────────────────────┤
-│              LAYER 3: LONGITUDINAL HEALTH CONTINUITY BACKBONE           │
-│  FHIR R4 Schemas • 14-Digit ABHA ID & Cryptographic QR Verification     │
-├─────────────────────────────────────────────────────────────────────────┤
-│              LAYER 4: CROSS-FACILITY CARE COORDINATION                  │
-│  Stateful Referral Tracking • Automated Recall for High-Risk Defaulters │
-├─────────────────────────────────────────────────────────────────────────┤
-│              LAYER 5: FACILITY & GOVERNMENT POPULATION INTELLIGENCE     │
-│  What-If Policy Simulator • Care Leakage Funnel • Friction Heatmaps     │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    Client[React 18 + Vite SPA<br/>Zero-Auth Landing & Simulator] -->|REST JSON| API[Express.js Engine]
+    API --> Intel[Core Intelligence Suite<br/>8D Friction | Markov Leakage | Knapsack Optimizer]
+    API --> Providers[Pluggable Adapters<br/>Maps: OSM | AI: Deterministic/Ollama | Storage: Local]
+    API --> DB[Storage Layer<br/>Default: Embedded JSON | Optional: Postgres / Mongo]
 ```
 
----
-
-## 👥 6 Dedicated Role Portals & Verified Demo Credentials
-
-| Role | Portal Path | Preloaded Account | Password | Primary Key Capabilities |
-|---|---|---|---|---|
-| **System Admin** | [`/admin`](http://localhost:5173/admin) | `admin@pfis.org` | `Admin@123` | System telemetry, immutable audit trails, institutional user provisioning, isolation enforcement. |
-| **Doctor** | [`/doctor`](http://localhost:5173/doctor) | `doctor@pfis.org` | `Doctor@123` | OPD queue, clinical tele-triage, prescription pad, stateful cross-facility referral initiation. |
-| **ASHA Worker** | [`/asha`](http://localhost:5173/asha) | `asha@pfis.org` | `Asha@123` | Touch-friendly village roster, doorstep visit logger, audio-assisted triage wizard, ANC recall. |
-| **Government** | [`/government`](http://localhost:5173/government) | `government@pfis.org` | `Gov@123` | Macro district health index, What-If simulator, care leakage funnel, block barrier heatmaps. |
-| **Hospital Desk** | [`/hospital`](http://localhost:5173/hospital) | `hospital@pfis.org` | `Hospital@123` | Inbound referral reception, bed reservations, ABHA lookup, cross-facility counter-referrals. |
-| **Patient** | [`/patient`](http://localhost:5173/patient) | `patient@pfis.org` | `Patient@123` | 5-stage care journey, friction radar, nearest verified PHC locator, teleconsultation launcher. |
+See [docs/architecture.md](./docs/architecture.md) for detailed architectural specifications.
 
 ---
 
-## ⚡ Quick Start Guide
+## Quick Start
 
-### 1. Prerequisites
-- **Node.js**: v18+ (Node 20 Recommended)
-- **MongoDB**: MongoDB Atlas (URI configured) or local MongoDB instance
+### ⚡ Local Development (Zero Docker, Zero SaaS)
 
-### 2. Installation
+PFIS includes an embedded relational JSON storage driver, running 100% offline out-of-the-box without requiring database servers or paid API keys.
+
 ```bash
-# Clone the repository
-git clone https://github.com/satyamhq/PFIS-Patient-Friction-Intelligence-System.git
-cd PFIS-Patient-Friction-Intelligence-System
+# 1. Clone the repository
+git clone https://github.com/satyamhq/Patient-Friction-Intelligence-System.git
+cd Patient-Friction-Intelligence-System
 
-# Install Server dependencies
-cd server
+# 2. Install dependencies
 npm install
 
-# Install Client dependencies
-cd ../client
-npm install
-```
-
-### 3. Run Development Servers
-```bash
-# From the project root:
+# 3. Start development servers
 npm run dev
-
-# Or independently:
-# Terminal 1 (Backend API):
-cd server && npm run dev
-
-# Terminal 2 (Frontend Client):
-cd client && npm run dev
 ```
 
-* **Frontend Web App**: [http://localhost:5173](http://localhost:5173)
-* **Backend API**: [http://localhost:5000](http://localhost:5000)
-* **API Health Telemetry**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
+- **Frontend**: [http://localhost:5173](http://localhost:5173) (Instant public exploration without login!)
+- **Backend API**: [http://localhost:5000](http://localhost:5000)
+- **API Health**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
 ---
 
-## 🧪 Comprehensive Verification Suites (88/88 Tests Passed)
+### 🐳 Docker Quick Start
 
-### Test Suite 1: Full Rebuild & 500 Synthetic Cohort Verification
+To launch the complete containerized stack:
+
 ```bash
-cd server
+docker compose up -d
+```
+
+To stop:
+```bash
+docker compose down
+```
+
+---
+
+## Public Demo & Exploration
+
+PFIS strictly separates public exploration from internal organization portals:
+
+- **Public Landing Page**: `/` — 8-dimension interactive slider, live what-if simulation, and architecture diagrams.
+- **Interactive Simulator**: `/demo/simulator` — Counterfactual parameter testing and scenario comparison.
+- **Population Intelligence**: `/demo` — Aggregate metrics and care leakage funnel.
+- **API Reference**: `/api-docs` — Interactive OpenAPI 3.0 schema.
+- **Operational Portals**: `/portals` — Role launchpad for Patient, Doctor, ASHA Worker, Hospital, and Health Authority workflows.
+
+---
+
+## Synthetic Data Pipeline
+
+PFIS adheres to a **Synthetic Data First** principle. Zero Protected Health Information (PHI) is required or stored.
+
+```bash
+# Seed 500 deterministic synthetic patient journeys (Mulberry32 PRNG)
+npm run seed:demo
+
+# Reset database to initial state
+npm run reset:demo
+```
+
+Explore synthetic fixtures in [`data/examples/`](./data/examples/) and documentation in [`data/README.md`](./data/README.md).
+
+---
+
+## Configuration
+
+Create a `.env` file in the root or `server/` directory (see [`.env.example`](./.env.example)):
+
+```bash
+PORT=5000
+NODE_ENV=development
+APP_MODE=demo
+DEMO_MODE=true
+
+# Database: 'embedded' (default), 'postgres', or 'mongodb'
+DB_MODE=embedded
+
+# Pluggable Adapters: 100% free & open-source by default
+MAP_PROVIDER=openstreetmap
+AI_PROVIDER=deterministic
+STORAGE_PROVIDER=local
+STORAGE_LOCAL_DIR=./uploads
+```
+
+See [docs/configuration.md](./docs/configuration.md) for full options.
+
+---
+
+## Pluggable Providers & Local LLM Support
+
+PFIS never locks you into paid proprietary APIs:
+
+| Provider Type | Open-Source Default | Optional Local LLM | Optional Cloud SaaS |
+|:---|:---|:---|:---|
+| **Maps & Routing** | OpenStreetMap + Haversine | — | Google Maps API |
+| **Barrier Synthesis** | Deterministic Math Engine | Ollama (`llama3.2`) | OpenAI API |
+| **Artifact Storage** | Local Filesystem (`./uploads`) | MinIO S3 | AWS S3 |
+
+### Using Local Offline Ollama
+```bash
+# In server/.env
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+```
+
+---
+
+## API Specification
+
+PFIS provides an OpenAPI 3.0 specification at [`openapi/openapi.yaml`](./openapi/openapi.yaml).
+
+Core demo endpoints require zero authentication:
+- `GET /api/health` — Health check and active providers
+- `GET /api/demo/overview` — Population KPI aggregates
+- `POST /api/demo/simulate` — What-if friction simulation
+- `GET /api/demo/leakage` — 5-stage Markov care leakage funnel
+- `GET /api/demo/friction-map` — Geospatial friction points
+
+See [docs/api.md](./docs/api.md) for full documentation.
+
+---
+
+## Healthcare Operational Disclaimer
+
+> **IMPORTANT:** The Patient Friction Intelligence System (PFIS) is an open-source research and operational decision-support prototype designed exclusively to model and measure non-clinical barriers (transportation, daily wage loss, digital literacy, documentation hurdles). All public demo datasets are synthetic. **PFIS does NOT provide clinical diagnoses, medical advice, or treatment recommendations.**
+
+---
+
+## Testing & Quality Assurance
+
+```bash
+# Run unit tests across all intelligence engines and adapters
 npm test
-```
-* **Result**: 16/16 Passed (100%)
-* Verifies 500+ Patients, Friction Profiles, Risks, Journeys, 120 Referrals, Admin Isolation, Triage Engine, Defaulter Recalls, and ABDM/ABHA QR generation.
 
-### Test Suite 2: Exhaustive End-to-End Live HTTP Audit
-```bash
-cd server
-node tests/e2e_exhaustive_audit.js
-```
-* **Result**: 72/72 Passed (100%)
-* Tests all 13 core operational workflows via live HTTP network requests against running services.
+# Run strict TypeScript typechecking
+npm run typecheck
 
-### Test Suite 3: Production Builds
-```bash
-# Server production build
-cd server && npm run build    # Exit 0 (Strict TypeScript compilation)
-
-# Client production build
-cd ../client && npm run build  # Exit 0 (2,457 modules transformed, ~355 kB shell)
+# Build frontend and backend production bundles
+npm run build
 ```
 
 ---
 
-## 🔒 Security & Compliance
+## Contributing
 
-- **Role Isolation Rule**: The `admin` role is strictly quarantined from public registration and Google OAuth onboarding. Attempted privilege self-escalation is intercepted with `403 Forbidden` and audited to security ledgers.
-- **Rate Limiting**: Specialized brute-force rate limiter (`authLimiter`) on authentication routes (60 requests / 15 minutes).
-- **ABDM Compliance**: Generates standard 14-digit ABHA tokens with cryptographic HMAC-SHA256 signatures for QR scanning.
-- **Audit Logging**: Immutable audit logs capturing user actions (`AUTH_LOGIN`, `AUTH_LOGOUT`, `PATIENT_PROFILE_UPDATED`, `REFERRAL_INITIATED`).
+We welcome contributions from researchers, software engineers, public health analysts, and UX designers! Please read our:
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
 
 ---
 
-## 📄 License & Acknowledgements
+## Project Roadmap
 
-Built for the **Smart India Hackathon (SIH) 2026** to empower rural and underserved communities across India through data-driven, non-clinical operational intelligence.
+See [ROADMAP.md](./ROADMAP.md) for upcoming milestones, including FHIR R4 bundle exports, GTFS municipal transit feeds, and H3 hexagonal spatial indexing.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
+
+*Historical Note: PFIS originated as a prototype developed during the Smart India Hackathon (SIH) 2026 and has since been transformed into an independent, general-purpose open-source health-access intelligence platform.*

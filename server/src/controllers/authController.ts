@@ -19,12 +19,12 @@ import path from 'path';
 import { config } from '../config/env.js';
 
 export const ADMIN_EMAILS = [
-  'dhirajkumar464748@gmail.com',
   'admin@pfis.org',
-  'admin@pfis.gov.in',
-  'satyam31sk@gmail.com',
-  'admin@gmail.com',
+  'admin@pfis.local',
+  'sysadmin@pfis.local',
+  ...config.adminEmails,
 ];
+
 
 export const getDashboardPath = (role: string): string => {
   switch (role) {
@@ -653,7 +653,7 @@ export class AuthController {
 
     if (isAdmin) {
       user = await User.create({
-        name: name || 'Dhiraj Kumar (Executive Admin)',
+        name: name || 'System Administrator',
         email: normalizedEmail,
         passwordHash: dummyPasswordHash,
         role: 'admin',

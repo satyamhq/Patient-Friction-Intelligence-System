@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Patient Friction Intelligence System (PFIS) API
+  description: |
+    PFIS is an open-source platform for modeling, measuring, visualizing, and simulating non-clinical barriers
+    (transit deficits, lost wages, digital literacy, documentation hurdles) that prevent patients from completing healthcare journeys.
+
+    **Healthcare Operational Disclaimer:** PFIS is an operational research and decision-support prototype.
+    Public demo endpoints operate on synthetic data. PFIS does not offer clinical diagnoses or medical advice.
+  version: 2.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: PFIS Open Source Project
+    url: https://github.com/satyamhq/Patient-Friction-Intelligence-System
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development / Demo Server
+  - url: https://pfis.local/api
+    description: Self-Hosted Production Server
+
+paths:
+  /health:
+    get:
+      summary: System Health Check
+      description: Returns health status, storage mode, AI adapter status, and map provider status.
+      responses:
+        '200':
+          description: System is operational.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                  storage:
+                    type: string
+                    example: embedded-json
+                  aiProvider:
+                    type: string
+                    example: deterministic-rules
+                  mapProvider:
+                    type: string
+                    example: openstreetmap
+
+  /demo/overview:
+    get:
+      summary: Public Demo Overview
+      description: Fetches synthetic population KPIs and macro metrics without requiring authentication.
+      responses:
+        '200':
+          description: Aggregate statistics for synthetic cohort.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalPatients:
+                    type: integer
+                    example: 500
+                  avgFrictionScore:
+                    type: number
+                    example: 44.8
+                  highFrictionCohortPercent:
+                    type: number
+                    example: 28.5
+                  predictedCompletionRate:
+                    type: number
+                    example: 52.4
+                  topBarriers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        friction:
+                          type: number
+                        share:
+                          type: string
+
+  /demo/simulate:
+    post:
+      summary: Run Public Friction Simulation
+      description: Simulates friction score, completion probability, barrier attribution, and targeted interventions for arbitrary inputs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationInput'
+      responses:
+        '200':
+          description: Simulation results with explainable breakdown.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResult'
+
+  /demo/leakage:
+    get:
+      summary: Public Care Leakage Funnel
+      description: Returns stage-by-stage drop-off analytics across the 5 core journey milestones (Referral, Consultation, Diagnostics, Treatment, Follow-up).
+      responses:
+        '200':
+          description: Care leakage funnel analytics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cohortSize:
+                    type: integer
+                    example: 500
+                  overallCompletionRate:
+                    type: number
+                    example: 41.2
+                  funnel:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LeakageStage'
+
+  /demo/friction-map:
+    get:
+      summary: Geospatial Friction Map Points
+      description: Returns synthetic geographic clusters and facility nodes for OpenStreetMap / Leaflet rendering.
+      responses:
+        '200':
+          description: List of geospatial friction points.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        lat:
+                          type: number
+                        lng:
+                          type: number
+                        frictionScore:
+                          type: number
+                        dominantBarrier:
+                          type: string
+
+  /demo/patients:
+    get:
+      summary: Synthetic Patient Cohort
+      description: Returns paginated synthetic patient friction records.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of synthetic patients.
+
+  /demo/interventions:
+    get:
+      summary: Standard Catalog of Operational Interventions
+      description: Returns non-clinical interventions and cost-friction mitigation weights.
+      responses:
+        '200':
+          description: Intervention catalog.
+
+components:
+  schemas:
+    SimulationInput:
+      type: object
+      properties:
+        distanceKm:
+          type: number
+          default: 15
+        transportScore:
+          type: number
+          default: 50
+        costBurden:
+          type: number
+          default: 60
+        digitalLiteracy:
+          type: number
+          default: 40
+        languageBarrier:
+          type: number
+          default: 30
+        familySupport:
+          type: number
+          default: 50
+        documentationAvailable:
+          type: boolean
+          default: true
+        appointmentTimingScore:
+          type: number
+          default: 50
+      required:
+        - distanceKm
+        - transportScore
+        - costBurden
+
+    SimulationResult:
+      type: object
+      properties:
+        frictionScore:
+          type: number
+          example: 58.2
+        frictionTier:
+          type: string
+          example: HIGH
+        careCompletionEstimate:
+          type: number
+          example: 41.8
+        dominantBarriers:
+          type: array
+          items:
+            type: string
+        factorBreakdown:
+          type: object
+          properties:
+            transit:
+              type: number
+            financial:
+              type: number
+            digital:
+              type: number
+            language:
+              type: number
+            documentation:
+              type: number
+        recommendedInterventions:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              expectedFrictionReduction:
+                type: number
+              category:
+                type: string
+
+    LeakageStage:
+      type: object
+      properties:
+        stage:
+          type: string
+          example: Diagnostics
+        incoming:
+          type: integer
+          example: 380
+        completed:
+          type: integer
+          example: 260
+        dropped:
+          type: integer
+          example: 120
+        dropRatePercent:
+          type: number
+          example: 31.5
+        primaryFrictionDrivers:
+          type: array
+          items:
+            type: string

@@ -1,0 +1,73 @@
+{
+  "profileId": "demo_friction_001",
+  "patientCode": "PFIS-JAL-0042",
+  "name": "Sunita Devi",
+  "location": "Chak Bilga Village, Phillaur, Jalandhar",
+  "overallFrictionScore": 68,
+  "frictionLevel": "HIGH",
+  "dominantBarrier": "Rural Transit Availability",
+  "attributionBreakdown": [
+    {
+      "name": "Transit Availability",
+      "category": "transport",
+      "rawScore": 82,
+      "weight": 0.22,
+      "pointsContributed": 18.0,
+      "percentageOfFriction": 26,
+      "severity": "critical",
+      "mitigationOpportunity": "Deploy rural hospital shuttle voucher or coordinate local ASHA transit"
+    },
+    {
+      "name": "Travel Distance (28 km)",
+      "category": "distance",
+      "rawScore": 70,
+      "weight": 0.18,
+      "pointsContributed": 12.6,
+      "percentageOfFriction": 19,
+      "severity": "high",
+      "mitigationOpportunity": "Route to nearest secondary sub-district hospital or community clinic"
+    },
+    {
+      "name": "Daily Wage Loss & Travel Cost",
+      "category": "cost",
+      "rawScore": 65,
+      "weight": 0.18,
+      "pointsContributed": 11.7,
+      "percentageOfFriction": 17,
+      "severity": "high",
+      "mitigationOpportunity": "Activate government healthcare benefits / diagnostic fee waiver"
+    },
+    {
+      "name": "Digital Access Barrier",
+      "category": "digital",
+      "rawScore": 55,
+      "weight": 0.12,
+      "pointsContributed": 6.6,
+      "percentageOfFriction": 10,
+      "severity": "high",
+      "mitigationOpportunity": "Assign assisted in-person desk booking and audio-guided notifications"
+    },
+    {
+      "name": "Documentation Readiness",
+      "category": "documentation",
+      "rawScore": 50,
+      "weight": 0.10,
+      "pointsContributed": 5.0,
+      "percentageOfFriction": 7,
+      "severity": "moderate",
+      "mitigationOpportunity": "Fast-track digital identity onboarding and document digitization"
+    },
+    {
+      "name": "Appointment Timing Conflict",
+      "category": "timing",
+      "rawScore": 50,
+      "weight": 0.08,
+      "pointsContributed": 4.0,
+      "percentageOfFriction": 6,
+      "severity": "moderate",
+      "mitigationOpportunity": "Provide evening/weekend appointment slots to protect daily wages"
+    }
+  ],
+  "explainabilityNarrative": "Overall friction score is 68/100. The largest single contributor is 'Transit Availability' contributing +18.0 points (26% of total friction). Addressing Transit and Travel Distance can relieve up to 30.6 friction points.",
+  "isSyntheticDemoData": true
+}

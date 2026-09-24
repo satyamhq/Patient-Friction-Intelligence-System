@@ -34,9 +34,9 @@ export const runRelationalSeed = async (): Promise<void> => {
     });
 
     const admin2 = await UserRepository.create({
-      email: 'dhirajkumar464748@gmail.com',
+      email: 'sysadmin@pfis.local',
       password_hash: adminHash,
-      name: 'Dhiraj Kumar (Executive Admin)',
+      name: 'PFIS Operations Admin',
       role: 'admin',
       phone: '+91 91234 56789',
     });
@@ -282,7 +282,7 @@ export const runRelationalSeed = async (): Promise<void> => {
 
     console.log('[Seed] Relational database seeding finished successfully!');
     console.log('  -> Admin: admin@pfis.org (Admin@123)');
-    console.log('  -> Admin: dhirajkumar464748@gmail.com (Admin@123)');
+    console.log('  -> Admin: sysadmin@pfis.local (Admin@123)');
     console.log('  -> Patient: patient@pfis.org (Patient@123)');
     console.log('  -> Hospital: staff@hospital.org (Hospital@123)');
     console.log('===========================================================');

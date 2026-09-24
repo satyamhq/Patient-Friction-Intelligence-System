@@ -1,0 +1,62 @@
+{
+  "cohortSize": 1000,
+  "overallJourneyCompletionRate": 25.4,
+  "highestDropoutStage": "2. Clinical Consultation",
+  "stages": [
+    {
+      "stage": "referral",
+      "stageLabel": "1. Referral Initiation",
+      "stageOrder": 1,
+      "patientsEntered": 1000,
+      "patientsCompleted": 780,
+      "patientsDropped": 220,
+      "stageRetentionRate": 78.0,
+      "cumulativeSurvivalRate": 78.0,
+      "primaryLeakageReason": "Transit deficit & difficult facility reachability"
+    },
+    {
+      "stage": "consultation",
+      "stageLabel": "2. Clinical Consultation",
+      "stageOrder": 2,
+      "patientsEntered": 780,
+      "patientsCompleted": 520,
+      "patientsDropped": 260,
+      "stageRetentionRate": 66.7,
+      "cumulativeSurvivalRate": 52.0,
+      "primaryLeakageReason": "Out-of-pocket test costs & diagnostic queue fatigue"
+    },
+    {
+      "stage": "diagnostics",
+      "stageLabel": "3. Diagnostic Testing",
+      "stageOrder": 3,
+      "patientsEntered": 520,
+      "patientsCompleted": 380,
+      "patientsDropped": 140,
+      "stageRetentionRate": 73.1,
+      "cumulativeSurvivalRate": 38.0,
+      "primaryLeakageReason": "Delays in pathology return & prescription procurement"
+    },
+    {
+      "stage": "treatment",
+      "stageLabel": "4. Treatment & Medication",
+      "stageOrder": 4,
+      "patientsEntered": 380,
+      "patientsCompleted": 254,
+      "patientsDropped": 126,
+      "stageRetentionRate": 66.8,
+      "cumulativeSurvivalRate": 25.4,
+      "primaryLeakageReason": "Inability to take repeat work leaves & return travel barrier"
+    },
+    {
+      "stage": "followup",
+      "stageLabel": "5. Post-Care Follow-up",
+      "stageOrder": 5,
+      "patientsEntered": 254,
+      "patientsCompleted": 254,
+      "patientsDropped": 0,
+      "stageRetentionRate": 100.0,
+      "cumulativeSurvivalRate": 25.4,
+      "primaryLeakageReason": "Adherent cohort with continuous care loop"
+    }
+  ]
+}

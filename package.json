@@ -14,9 +14,14 @@
     "build": "npm run build:server && npm run build:client",
     "build:client": "cd client && npm run build",
     "build:server": "cd server && npm run build",
+    "typecheck": "cd server && npm run typecheck && cd ../client && npm run typecheck",
+    "lint": "npm run typecheck",
     "test": "cd server && npm test",
-    "test:e2e": "cd server && npm run test:e2e",
-    "seed": "cd server && npm run seed"
+    "seed": "cd server && npm run seed:demo",
+    "seed:demo": "cd server && npm run seed:demo",
+    "reset:demo": "cd server && npm run reset:demo",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

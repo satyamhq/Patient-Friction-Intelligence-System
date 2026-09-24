@@ -1,0 +1,39 @@
+{
+  "simulationId": "sim_preview_001",
+  "baseline": {
+    "frictionScore": 72,
+    "careCompletionProbability": 42,
+    "dominantBarrier": "Transit Availability",
+    "dropoutRiskStage": "1. Referral Initiation (Travel Impedance)"
+  },
+  "scenarios": [
+    {
+      "name": "Community Transport Voucher",
+      "projectedFriction": 54,
+      "projectedCompletionProbability": 61,
+      "frictionReduction": 18,
+      "completionGainPercent": 19,
+      "implementationCostINR": 450,
+      "notes": "Directly mitigates primary physical transit impedance."
+    },
+    {
+      "name": "Transport + Local Diagnostics Voucher",
+      "projectedFriction": 41,
+      "projectedCompletionProbability": 76,
+      "frictionReduction": 31,
+      "completionGainPercent": 34,
+      "implementationCostINR": 850,
+      "notes": "Reduces both primary travel friction and secondary out-of-pocket lab fee resistance."
+    },
+    {
+      "name": "Full Multi-Modal Care Navigation",
+      "projectedFriction": 28,
+      "projectedCompletionProbability": 88,
+      "frictionReduction": 44,
+      "completionGainPercent": 46,
+      "implementationCostINR": 1400,
+      "notes": "Combines transit link, ASHA accompaniment, audio vernacular assistance, and evening clinic scheduling."
+    }
+  ],
+  "disclaimer": "Simulated synthetic values for decision support. Not a clinical medical prediction."
+}

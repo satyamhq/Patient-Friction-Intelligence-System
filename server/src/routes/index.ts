@@ -24,7 +24,12 @@ import governmentRoutes from './governmentRoutes.js';
 import appointmentRoutes from './appointmentRoutes.js';
 import medicalRecordRoutes from './medicalRecordRoutes.js';
 
+import demoRoutes from './demoRoutes.js';
+
 const router = Router();
+
+// Public Demo & Synthetic Intelligence Routes (Zero Auth Required)
+router.use('/demo', demoRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/patients', patientRoutes);

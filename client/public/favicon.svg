@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <defs>
+    <linearGradient id="pfis-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e" />
+      <stop offset="50%" stop-color="#0d9488" />
+      <stop offset="100%" stop-color="#14b8a6" />
+    </linearGradient>
+    <linearGradient id="pfis-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#ccfbf1" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+  <!-- Background Squircle -->
+  <rect width="40" height="40" rx="10" fill="url(#pfis-grad)" />
+  <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="9.25" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.5" />
+  
+  <!-- Healthcare Pulse & Continuity Signal -->
+  <path d="M7 20.5h6l2.8-6 3.6 11.5 3-7.5 2 3.5h4.6" stroke="url(#pfis-glow)" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Data Intelligence Nexus Nodes -->
+  <circle cx="29" cy="20.5" r="2" fill="#ffffff" />
+  <circle cx="15.8" cy="14.5" r="1.5" fill="#ccfbf1" />
+  <circle cx="19.4" cy="26" r="1.5" fill="#ccfbf1" />
+</svg>

@@ -46,6 +46,14 @@ const About = lazyPage(() => import('./pages/public/About'), 'About');
 const Contact = lazyPage(() => import('./pages/public/Contact'), 'Contact');
 const NotFound = lazyPage(() => import('./pages/public/NotFound'), 'NotFound');
 const SystemArchitecture = lazyPage(() => import('./pages/public/SystemArchitecture'), 'SystemArchitecture');
+const PublicDemo = lazyPage(() => import('./pages/public/PublicDemo'), 'PublicDemo');
+const PublicSimulator = lazyPage(() => import('./pages/public/PublicSimulator'), 'PublicSimulator');
+const DocsHub = lazyPage(() => import('./pages/public/DocsHub'), 'DocsHub');
+const ApiExplorer = lazyPage(() => import('./pages/public/ApiExplorer'), 'ApiExplorer');
+const SecurityPolicy = lazyPage(() => import('./pages/public/SecurityPolicy'), 'SecurityPolicy');
+const ContributingGuide = lazyPage(() => import('./pages/public/ContributingGuide'), 'ContributingGuide');
+const ChangelogPage = lazyPage(() => import('./pages/public/ChangelogPage'), 'ChangelogPage');
+const OperationalPortalsLaunchpad = lazyPage(() => import('./pages/public/OperationalPortalsLaunchpad'), 'OperationalPortalsLaunchpad');
 
 // Patient Pages
 const PatientDashboard = lazyPage(() => import('./pages/patient/PatientDashboard'), 'PatientDashboard');
@@ -133,9 +141,18 @@ export const App: React.FC = () => {
                       {/* Public Main Layout */}
                       <Route element={<MainLayout />}>
                         <Route path="/" element={<LandingPage />} />
+                        <Route path="/demo" element={<PublicDemo />} />
+                        <Route path="/demo/simulator" element={<PublicSimulator />} />
+                        <Route path="/explore" element={<PublicDemo />} />
+                        <Route path="/docs" element={<DocsHub />} />
+                        <Route path="/api" element={<ApiExplorer />} />
+                        <Route path="/architecture" element={<SystemArchitecture />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
-                        <Route path="/architecture" element={<SystemArchitecture />} />
+                        <Route path="/security" element={<SecurityPolicy />} />
+                        <Route path="/contributing" element={<ContributingGuide />} />
+                        <Route path="/changelog" element={<ChangelogPage />} />
+                        <Route path="/portals" element={<OperationalPortalsLaunchpad />} />
                         <Route path="/hospitals" element={<Navigate to="/patient/hospitals" replace />} />
                       </Route>
 

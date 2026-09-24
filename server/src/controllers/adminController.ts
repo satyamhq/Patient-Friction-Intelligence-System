@@ -18,6 +18,7 @@ import { Referral } from '../models/Referral.js';
 import { getDB } from '../database/db.js';
 import { AuditService } from '../services/auditService.js';
 import { AuthenticatedRequest } from '../middleware/authMiddleware.js';
+import { config } from '../config/env.js';
 
 export class AdminController {
   public static async getDashboardStats(req: Request, res: Response): Promise<void> {
@@ -770,11 +771,10 @@ export class AdminController {
 
       // Safeguard: Cannot deactivate primary system admin accounts
       const protectedEmails = [
-        'dhirajkumar464748@gmail.com',
-        'satyam31sk@gmail.com',
         'admin@pfis.org',
-        'admin@pfis.gov.in',
-        'admin@gmail.com',
+        'admin@pfis.local',
+        'sysadmin@pfis.local',
+        ...config.adminEmails,
       ];
       if (protectedEmails.includes(user.email.toLowerCase())) {
         res.status(403).json({ success: false, message: 'Primary administrator accounts cannot be deactivated.' });
@@ -820,11 +820,10 @@ export class AdminController {
       }
 
       const protectedEmails = [
-        'dhirajkumar464748@gmail.com',
-        'satyam31sk@gmail.com',
         'admin@pfis.org',
-        'admin@pfis.gov.in',
-        'admin@gmail.com',
+        'admin@pfis.local',
+        'sysadmin@pfis.local',
+        ...config.adminEmails,
       ];
       if (protectedEmails.includes(user.email.toLowerCase()) && role !== 'admin') {
         res.status(403).json({ success: false, message: 'Cannot demote primary administrator accounts.' });

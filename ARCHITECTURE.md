@@ -1,133 +1,103 @@
 # PFIS Technical Architecture & System Design
-### 5-Layer Offline-First Care-Access & Continuity Platform for Rural & Underserved Public Healthcare
-**Smart India Hackathon (SIH) 2026**
+### Open-Source Platform for Modeling, Measuring, and Simulating Non-Clinical Healthcare Access Friction
 
 ---
 
 ## 1. Executive Summary & Core Mandate
 
-The **Patient Friction Intelligence System (PFIS)** is an integrated care-access, quality-support, and care-continuity platform purpose-built for India's public health hierarchy (Sub-Centres / Ayushman Arogya Mandirs → Primary Health Centres → Community Health Centres / FRUs → District Hospitals).
+The **Patient Friction Intelligence System (PFIS)** is an open-source platform for measuring, modeling, visualizing, and simulating non-clinical barriers (transit deficits, lost daily wages, digital illiteracy, documentation hurdles) that prevent patients from completing healthcare journeys.
 
-### The Guiding Design Principles
-1. **Strengthen, Don't Replace**: Every module layers directly on top of existing national health infrastructure (**ABDM/ABHA**, **e-Sanjeevani**, **HMIS**), never creating parallel or competing systems.
-2. **Offline-First by Default**: Assumes zero or intermittent connectivity as the normal operating case through local IndexedDB caching and an asynchronous mutation outbox queue.
-3. **Frontline-Worker-Centered UX**: Designed first for ASHA/ANM health workers with audio/icon-assisted interfaces and vernacular language synthesis.
-4. **Interoperability over Lock-in**: All clinical and referral data structures conform natively to **FHIR R4** and **ABDM** standards.
-5. **Consent-Based Access**: Longitudinal records are shared across facilities exclusively through explicit, time-bound, auditable patient consent tokens.
-6. **Stateful Tracking**: Every referral, lab request, and follow-up recall is a tracked state machine (`initiated → accepted → in-transit → completed`), guaranteeing that **nothing falls through the cracks**.
+### Guiding Architectural Principles
+1. **Strengthen Longitudinal Continuity**: Support care workflows from community outreach to primary health centres and referral hospitals.
+2. **Local-First & Offline Resilience**: Operate without mandatory internet connectivity, external SaaS accounts, or cloud API keys.
+3. **Pluggable Provider Architecture**: Mapping, AI, and storage are isolated behind clean TypeScript adapter interfaces (`IMapProvider`, `IAIProvider`, `IStorageProvider`).
+4. **Deterministic & Explainable Intelligence**: All scoring calculations, nonlinear compounding effects, and attribution models use deterministic, inspectable mathematics.
+5. **Privacy & Synthetic Data Safety**: Public demos and testing pipelines use 100% synthetic cohorts. Real PHI is never required for aggregate non-clinical friction modeling.
+6. **Zero Authentication Wall for Exploration**: The public landing page, interactive simulator, and API explorer are accessible without an account.
 
 ---
 
-## 2. 5-Layer Solution Architecture
+## 2. Solution Architecture
 
 ```mermaid
 graph TD
-    subgraph "Layer 1: Frontline Patient Access"
-        L1A[Installable PWA Client]
-        L1B[ASHA / ANM Touch & Voice Portal]
-        L1C[Dexie / IndexedDB Offline Store]
-        L1D[Offline Mutation Sync Queue]
-        L1E[IVR & USSD *139*7347# Fallback]
+    subgraph "Frontend Layer (React 18 + Vite + Tailwind)"
+        F1[Public Landing & Live Friction Slider]
+        F2[Interactive What-If Simulator]
+        F3[Geospatial Friction Map (OpenStreetMap / Leaflet)]
+        F4[Operational Role Portals: Patient / Doctor / ASHA / Admin]
     end
 
-    subgraph "Layer 2: Digital Triage & Symptom Router"
-        L2A[Rule-Based Clinical Triage Engine]
-        L2B[4-Tier Urgency: Emergency / PHC / Teleconsult / Home]
-        L2C[Facility Load-Balanced Capability Router]
+    subgraph "API Transport & Gateways (Express.js + TypeScript)"
+        API1[Public Demo Endpoints /api/demo/* (Zero Auth)]
+        API2[Operational Endpoints /api/* (JWT / Role Auth)]
+        API3[OpenAPI 3.0 Documentation Explorer]
     end
 
-    subgraph "Layer 3: Longitudinal Health Record"
-        L3A[FHIR R4 Interoperable Schemas]
-        L3B[ABDM ABHA 14-Digit ID & QR Engine]
-        L3C[Single Continuous Cross-Facility Timeline]
-        L3D[Consent-Based Access Manager]
+    subgraph "Core Intelligence Suite (server/src/intelligence/)"
+        I1[8D Friction Fingerprint Engine]
+        I2[Nonlinear Interaction Compounding Engine]
+        I3[Markov Care Leakage Funnel Engine]
+        I4[Constrained Knapsack Intervention Optimizer]
+        I5[Additive Barrier Attribution & Explainability Engine]
+        I6[Patient Digital Twin Simulator]
     end
 
-    subgraph "Layer 4: Care Coordination Engine"
-        L4A[Stateful Referral Lifecycle Tracking]
-        L4B[High-Risk Defaulter Recall Engine: ANC/UIP/NCD]
-        L4C[Diagnostic Coordination & Missing-Report Alerts]
-        L4D[Essential Drugs List Stockout Registry]
+    subgraph "Pluggable Provider Adapters (server/src/providers/)"
+        P1[Map: OpenStreetMap / Nominatim (Default) | Google Maps]
+        P2[AI: Deterministic Rules (Default) | Ollama | OpenAI]
+        P3[Storage: Local Filesystem (Default) | S3 / MinIO]
     end
 
-    subgraph "Layer 5: Facility & Governance Dashboards"
-        L5A[District CMO & State Health Oversight]
-        L5B[Referral Leakage Funnel & Drop-Off Analytics]
-        L5C[Defaulter Closure Monitoring]
-        L5D[What-If Policy Simulation Engine]
+    subgraph "Persistence & Storage Layer"
+        D1[Embedded SQL JSON Store (Zero Setup Default)]
+        D2[PostgreSQL (Relational Multi-User Profile)]
+        D3[MongoDB (Document Store Profile)]
     end
 
-    L1B --> L1C --> L1D -->|Sync Flush| L2A
-    L1E -->|Telephony Gateway| L2A
-    L2A --> L2B --> L2C
-    L2C --> L3A
-    L3A --> L3B --> L3C --> L3D
-    L3D --> L4A & L4B & L4C & L4D
-    L4A & L4B & L4C & L4D --> L5A & L5B & L5C & L5D
+    F1 & F2 & F3 -->|REST JSON| API1
+    F4 -->|REST JSON with JWT| API2
+    API1 & API2 --> I1 & I2 & I3 & I4 & I5 & I6
+    API1 & API2 --> P1 & P2 & P3
+    API1 & API2 --> D1 & D2 & D3
 ```
 
 ---
 
-## 3. Layer Specifications
+## 3. Pluggable Provider Architecture
 
-### Layer 1: Frontline Patient Access
-- **Offline PWA Architecture**: Built with Vite PWA and service worker caching for offline app shell execution.
-- **Client Storage**: `client/src/offline/db.ts` uses Dexie.js (IndexedDB) for storing offline patient registrations, symptom assessments, and revisit tasks.
-- **Sync Flusher**: `client/src/offline/syncManager.ts` listens to `online` network recovery events and flushes the queued mutations to `POST /api/sync/flush`.
-- **Zero-Connectivity Fallback**: Detailed in `docs/FALLBACK_IVR_USSD.md`, providing toll-free IVR dialing and USSD shortcode `*139*7347#` routing for feature phones.
+PFIS strictly isolates third-party integrations:
 
-### Layer 2: Digital Triage & Symptom Router
-- **Clinical Protocols**: `server/src/intelligence/triage/clinicalTriageEngine.ts` implements:
-  - **IMNCI** pediatric triage guidelines (<5 years).
-  - **Maternal Health** danger signs (antepartum hemorrhage, severe pre-eclampsia, convulsions).
-  - **Acute Cardiovascular & Stroke** red flags.
-  - **Chronic NCDs** (hypertension, diabetes mellitus).
-- **4-Tier Urgency Matrix**:
-  1. `EMERGENCY_108`: Immediate ambulance dispatch to District Hospital / FRU emergency bed.
-  2. `PHC_VISIT`: Scheduled in-person evaluation with digital queue token.
-  3. `TELECONSULT`: Assisted e-Sanjeevani consultation at Sub-Centre without patient travel.
-  4. `SELF_CARE`: Home hydration and guidance with 48-hour ASHA remote follow-up.
+### Map Provider (`server/src/providers/maps/`)
+- **Default**: `OpenStreetMapProvider` provides open tiles and haversine geodesic calculation. No external billing required.
+- **Optional**: `GoogleMapsProvider` can be activated via `MAP_PROVIDER=google` and `GOOGLE_MAPS_API_KEY`.
 
-### Layer 3: Longitudinal Health Record (Continuity Backbone)
-- **FHIR R4 Resources**: Conforms to FHIR R4 in `server/src/fhir/fhirTypes.ts`:
-  - `FHIRPatient`, `FHIREncounter`, `FHIRCondition`, `FHIRServiceRequest`, `FHIRCarePlan`.
-- **ABDM Integration**: `server/src/services/abhaService.ts` generates:
-  - 14-digit ABHA Number: `XX-XXXX-XXXX-XXXX`
-  - ABHA Address: `patient@abdm`
-  - Cryptographically signed QR code conforming to National Health Authority (NHA) specifications.
-- **Continuous Timeline**: Tracks patient encounters seamlessly from village Sub-Centre to Primary Health Centre to District Hospital.
+### AI Provider (`server/src/providers/ai/`)
+- **Default**: `DeterministicAIProvider` provides 100% offline, explainable rule-based synthesis.
+- **Local LLM**: `OllamaProvider` connects to local Ollama instances (`http://localhost:11434`) running open weights like `llama3.2`.
+- **Optional Cloud**: `OpenAIProvider` can be activated via `AI_PROVIDER=openai`.
 
-### Layer 4: Care Coordination Engine
-- **Stateful Referral Tracking**: Managed in `server/src/controllers/referralController.ts`. Referrals are state machines:
-  $$\text{initiated} \longrightarrow \text{accepted} \longrightarrow \text{in-transit} \longrightarrow \text{consulted} \longrightarrow \text{counter-referred}$$
-  Each state transition logs actor, facility, timestamp, and clinical notes.
-- **High-Risk Recall Engine**: Managed in `server/src/intelligence/recall/highRiskRecallEngine.ts`. Scans:
-  - Maternal ANC (4 mandatory checkups + IFA compliance)
-  - Universal Immunization Programme (Birth to 24 months)
-  - Chronic NCD monthly refill adherence
-  Automatically generates actionable ASHA revisit tasks when appointments are overdue.
-- **Essential Medicine Inventory**: Managed in `server/src/controllers/medicineInventoryController.ts`, providing real-time stockout tracking for essential public health drugs.
-
-### Layer 5: Facility & Governance Dashboards
-- **District Health Telemetry**: Managed in `client/src/pages/admin/AdminDashboard.tsx`, presenting:
-  - Referral completion rate (%)
-  - High-risk defaulter resolution rate (%)
-  - Medicine stockout alarms
-  - Teleconsultation volumes and travel kilometers avoided.
+### Storage Provider (`server/src/providers/storage/`)
+- **Default**: `LocalStorageProvider` saves uploaded artifacts to the local filesystem (`./uploads`).
+- **Object Store**: `S3MinioProvider` enables S3-compatible object storage for production clusters.
 
 ---
 
-## 4. End-to-End MVP Flows
+## 4. Multi-Engine Intelligence Suite
 
-1. **Flow 1: ASHA-Assisted Offline Registration + Triage**:
-   - ASHA worker registers patient offline at the doorstep.
-   - Runs audio/icon-guided symptom triage.
-   - System recommends routing; record is stored locally and syncs automatically when online.
-2. **Flow 2: Cross-Facility Stateful Referral**:
-   - PHC Doctor logs clinical findings and creates a stateful referral to District Hospital.
-   - District Hospital referral reception accepts referral, reserves bed/specialist, and scans ABHA QR code to view longitudinal history.
-   - Specialist counter-refers patient back to PHC with follow-up protocol.
-3. **Flow 3: High-Risk Follow-Up & Defaulter Recall**:
-   - Automated protocol engine identifies an overdue checkup (e.g. 3rd ANC visit for Sunita Devi).
-   - Generates high-priority recall task in ASHA Anita Devi's mobile queue.
-   - ASHA logs home visit and reschedules appointment, closing the care loop.
+All modules in `server/src/intelligence/` are purely functional, deterministic, and independently testable:
+
+1. **`frictionEngine.ts`**: Computes weighted friction across 8 socio-demographic and logistics dimensions.
+2. **`interactionEngine.ts`**: Applies quadratic interaction multipliers to model compounding barriers.
+3. **`failureRiskEngine.ts`**: Calculates care abandonment hazard via a calibrated logistic response function.
+4. **`careLeakageEngine.ts`**: Tracks cohort attrition across the 5-stage care continuum (Referral $\to$ Consultation $\to$ Diagnostics $\to$ Treatment $\to$ Follow-up).
+5. **`knapsackOptimizer.ts`**: Solves the 0/1 knapsack resource allocation problem for operational interventions under a fixed budget.
+6. **`barrierAttributionEngine.ts`**: Decomposes total friction into an explainable point-by-point narrative.
+7. **`patientDigitalTwinEngine.ts`**: Runs counterfactual scenario simulations against demographic profiles.
+
+---
+
+## 5. Security & Healthcare Governance
+
+- **Non-Clinical System**: PFIS explicitly models operational and non-clinical access friction. It does not provide clinical diagnosis or therapeutic prescriptions.
+- **Synthetic Data**: Public demonstrations and test suites utilize seeded synthetic datasets. Real Protected Health Information (PHI) is strictly avoided in public instances.

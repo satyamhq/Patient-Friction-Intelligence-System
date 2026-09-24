@@ -21,6 +21,9 @@ import {
   Stethoscope,
   Users as UsersIcon,
   ShieldCheck,
+  BookOpen,
+  Sliders,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
@@ -78,18 +81,17 @@ export const Navbar: React.FC = () => {
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-                <Activity className="w-5 h-5 stroke-[2.2]" />
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="PFIS Logo"
+                className="w-8 h-8 rounded-xl shadow-xs group-hover:scale-105 transition-transform shrink-0"
+              />
               <div className="flex flex-col">
-                <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
+                <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 leading-none">
                   PFIS
-                  <span className="text-[10px] bg-teal-50 text-teal-800 font-bold px-1.5 py-0.2 rounded-full border border-teal-200 uppercase">
-                    v1.0
-                  </span>
                 </span>
-                <span className="text-[10px] font-medium text-slate-500 -mt-0.5 hidden sm:inline">
-                  Patient Friction Intelligence
+                <span className="text-[10px] font-medium text-slate-500 mt-0.5 hidden sm:inline tracking-tight">
+                  Healthcare Access Intelligence
                 </span>
               </div>
             </Link>
@@ -406,24 +408,50 @@ export const Navbar: React.FC = () => {
             {!isAuthenticated && (
               <>
                 <Link
-                  to="/patient/hospitals"
-                  className="px-3 py-1.5 rounded-xl hover:text-teal-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                  to="/demo"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                    isActive('/demo')
+                      ? 'bg-teal-50 text-teal-800 font-bold border border-teal-200 shadow-2xs'
+                      : 'hover:text-teal-700 hover:bg-slate-50'
+                  }`}
                 >
-                  <MapPin className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Find Hospitals</span>
+                  <Activity className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Demo</span>
                 </Link>
+
                 <Link
-                  to="/architecture"
-                  className="px-3 py-1.5 rounded-xl text-teal-800 bg-teal-50 hover:bg-teal-100 font-bold transition-colors flex items-center gap-1.5 border border-teal-200/80"
+                  to="/demo/simulator"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                    isActive('/demo/simulator')
+                      ? 'bg-teal-50 text-teal-800 font-bold border border-teal-200 shadow-2xs'
+                      : 'hover:text-teal-700 hover:bg-slate-50'
+                  }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                  <span>System Architecture</span>
+                  <Sliders className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Simulator</span>
                 </Link>
+
                 <Link
-                  to="/about"
-                  className="px-3 py-1.5 rounded-xl hover:text-teal-700 hover:bg-slate-50 transition-colors"
+                  to="/docs"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                    isActive('/docs')
+                      ? 'bg-teal-50 text-teal-800 font-bold border border-teal-200 shadow-2xs'
+                      : 'hover:text-teal-700 hover:bg-slate-50'
+                  }`}
                 >
-                  About Platform
+                  <BookOpen className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Docs</span>
+                </Link>
+
+                <Link
+                  to="/api"
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                    isActive('/api')
+                      ? 'bg-teal-50 text-teal-800 font-bold border border-teal-200 shadow-2xs'
+                      : 'hover:text-teal-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>API</span>
                 </Link>
               </>
             )}
@@ -586,17 +614,29 @@ export const Navbar: React.FC = () => {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Link
-                    to="/login?role=admin"
-                    className="text-xs font-bold text-slate-700 hover:text-teal-700 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                  <a
+                    href="https://github.com/satyamhq/Patient-Friction-Intelligence-System"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+                    title="View GitHub Repository"
                   >
-                    {t('nav.login', 'Admin Sign In')}
+                    <ExternalLink className="w-4 h-4 text-slate-600" />
+                  </a>
+
+                  <Link
+                    to="/portals"
+                    className="text-xs font-semibold text-slate-600 hover:text-teal-700 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    Portals
                   </Link>
+
                   <Link
-                    to="/register"
-                    className="text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl shadow-xs transition-all"
+                    to="/demo"
+                    className="text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
                   >
-                    {t('nav.register', 'Register')}
+                    <Activity className="w-3.5 h-3.5" />
+                    <span>Open Demo</span>
                   </Link>
                 </div>
               )}
@@ -638,18 +678,17 @@ export const Navbar: React.FC = () => {
           >
             {/* Drawer Header */}
             <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white font-bold text-xs shadow-xs">
-                  <Activity className="w-4 h-4 stroke-[2.2]" />
-                </div>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/favicon.svg"
+                  alt="PFIS Logo"
+                  className="w-7 h-7 rounded-xl shadow-xs shrink-0"
+                />
                 <div className="flex flex-col">
-                  <span className="font-extrabold text-sm tracking-tight text-slate-900 flex items-center gap-1.5">
-                    PFIS Platform
-                    <span className="text-[9px] bg-teal-100 text-teal-800 font-bold px-1 rounded">
-                      v1.0
-                    </span>
+                  <span className="font-extrabold text-sm tracking-tight text-slate-900 leading-none">
+                    PFIS
                   </span>
-                  <span className="text-[10px] text-slate-500">Healthcare Accessibility</span>
+                  <span className="text-[10px] font-medium text-slate-500 mt-0.5">Healthcare Access Intelligence</span>
                 </div>
               </div>
               <button

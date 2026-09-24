@@ -7,11 +7,15 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
-    "seed": "tsx src/seed/seed500.ts",
-    "seed:500": "tsx src/seed/seed500.ts",
-    "test": "node tests/verify_full_rebuild.js",
-    "test:e2e": "node tests/e2e_exhaustive_audit.js"
+    "test": "node tests/intelligence_test.js",
+    "test:integration": "node tests/verify_platform_functions.js",
+    "test:rebuild": "node tests/verify_full_rebuild.js",
+    "seed": "tsx src/seed/seedDemoData.ts",
+    "seed:demo": "tsx src/seed/seedDemoData.ts",
+    "reset:demo": "tsx src/seed/resetDemoData.ts",
+    "seed:500": "tsx src/seed/seed500.ts"
   },
   "dependencies": {
     "axios": "^1.7.9",

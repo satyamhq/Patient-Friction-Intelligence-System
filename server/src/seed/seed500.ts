@@ -99,8 +99,8 @@ export const seed500SyntheticCohort = async () => {
   });
 
   await User.create({
-    name: 'Dhiraj Kumar (Lead Admin)',
-    email: 'dhirajkumar464748@gmail.com',
+    name: 'PFIS Operations Admin',
+    email: 'sysadmin@pfis.local',
     passwordHash: adminPass,
     role: 'admin',
     phone: '9876500002',

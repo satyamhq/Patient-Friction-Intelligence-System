@@ -22,9 +22,10 @@ export const createApp = (): Express => {
   const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
-    'https://pfis-sih.vercel.app',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5000',
     config.clientUrl,
-  ];
+  ].filter(Boolean);
 
   app.use(
     cors({
@@ -37,7 +38,9 @@ export const createApp = (): Express => {
         const normalizedOrigin = origin.replace(/\/+$/, '');
         if (
           allowedOrigins.includes(normalizedOrigin) ||
-          (config.nodeEnv === 'development' && /^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin))
+          config.nodeEnv === 'development' ||
+          config.demoMode ||
+          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin)
         ) {
           callback(null, true);
         } else {
@@ -92,7 +95,7 @@ export const createApp = (): Express => {
   const uploadsPath = path.resolve(process.cwd(), 'uploads');
   app.use('/uploads', express.static(uploadsPath));
 
-  // System Health & Enterprise Telemetry Endpoint
+  // System Health & Open Source Telemetry Endpoint
   app.get('/api/health', (req: Request, res: Response) => {
     const memory = process.memoryUsage();
     res.status(200).json({
@@ -102,12 +105,20 @@ export const createApp = (): Express => {
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
       environment: config.nodeEnv,
+      appMode: config.appMode,
+      demoMode: config.demoMode,
+      providers: {
+        database: config.databaseType,
+        maps: config.mapProvider,
+        ai: config.aiProvider,
+        storage: config.storageProvider,
+      },
       memory: {
         rssMb: Math.round((memory.rss / 1024 / 1024) * 100) / 100,
         heapTotalMb: Math.round((memory.heapTotal / 1024 / 1024) * 100) / 100,
         heapUsedMb: Math.round((memory.heapUsed / 1024 / 1024) * 100) / 100,
       },
-      mapMode: config.googleMapsApiKey ? 'Google Maps API Active' : 'Demo Map Engine Active',
+      disclaimer: 'PFIS is an operational healthcare access intelligence platform. All demo data is synthetic. Not for clinical medical diagnosis.',
     });
   });
 
