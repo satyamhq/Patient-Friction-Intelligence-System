@@ -9,6 +9,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
+    "pretest": "tsc",
     "test": "node tests/intelligence_test.js",
     "test:integration": "node tests/verify_platform_functions.js",
     "test:rebuild": "node tests/verify_full_rebuild.js",

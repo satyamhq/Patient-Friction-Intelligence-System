@@ -37,8 +37,11 @@ jobs:
       - name: Typecheck TypeScript (Client & Server)
         run: npm run typecheck
 
+      - name: Build Backend Bundles
+        run: npm run build:server
+
       - name: Run Intelligence & Engine Unit Tests
         run: npm test
 
-      - name: Build Frontend & Backend Bundles
-        run: npm run build
+      - name: Build Frontend Production Bundle
+        run: npm run build:client

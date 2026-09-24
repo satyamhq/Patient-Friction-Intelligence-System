@@ -16,7 +16,7 @@
     "build:server": "cd server && npm run build",
     "typecheck": "cd server && npm run typecheck && cd ../client && npm run typecheck",
     "lint": "npm run typecheck",
-    "test": "cd server && npm test",
+    "test": "npm run build:server && cd server && npm test",
     "seed": "cd server && npm run seed:demo",
     "seed:demo": "cd server && npm run seed:demo",
     "reset:demo": "cd server && npm run reset:demo",
